@@ -57,7 +57,7 @@ class Vertex {
   }
 
   isOn(x, y) {
-    return (dist(x, y, this.x, this.y) < VERTEX_SNAP_SIZE * this.size);
+    return (dist(x, y, this.x, this.y) < VERTEX_SNAP_SIZE * this.size * 2);
   }
 
   translate(x, y) {
@@ -178,6 +178,14 @@ class Vertex {
     this.edges = mergedEdges;
     v.kill();
 */
+  }
+
+  snap()
+  {
+    if(grid.isMagnetic)
+    {
+      this.move(grid.closestLine(this.x), grid.closestLine(this.y));
+    }
   }
 
 

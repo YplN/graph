@@ -72,6 +72,8 @@ let COLOR_HEIGHT;
 
 let latexButton;
 
+let grid;
+
 let oneFrameMoreToDo = true;
 
 
@@ -130,6 +132,7 @@ function setup() {
   modeSlider = new Slider(0.02 * width, 0.9525 * height, 80, 0, 2, 1, true, DEFAULT_COLOR, BACKGROUND_COLOR, false);
 
   latexButton = new Button(10, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR);
+  grid = new Grid(50, DEFAULT_COLOR, true);
 }
 
 
@@ -137,9 +140,9 @@ function draw() {
   // put drawing code here
   background(BACKGROUND_COLOR);
   // console.log(frameCount);
-
   UpdateEgdes();
 
+  grid.show();
   showGraph();
   // if (Edges.length > 0) {
   // 	console.log(Edges[0].distFrom(mouseX, mouseY));
@@ -259,7 +262,13 @@ function showCreatingEdges() {
 
 
     //line(mouseX, mouseY, lmouseX, lmouseY);
-    fakeVertex = new Vertex(mouseX, mouseY, 1);
+    if(grid.isMagnetic)
+    {
+      fakeVertex = new Vertex(grid.closestLine(mouseX), grid.closestLine(mouseY), 1);
+    }
+    else {
+      fakeVertex = new Vertex(mouseX, mouseY, 1);
+    }
 
     if (keyIsPressed && keyCode == SHIFT) {
       for (let v of selectedVertices) {
@@ -616,11 +625,19 @@ function selectEdgesFromBox(x1, y1, x2, y2) {
     let y2 = e.v2.y;
 
 
-    // if ((x1 > minX && x1 < maxX && y1 > minY && y1 < maxY) || (x2 > minX && x2 < maxX && y2 > minY && y2 < maxY)) {
-    //   sel.push(e);
-    //   console.log(e.toString());
-    // }
-    let m = (y2 - y1) / (x2 - x1);
+    let dy = y2 - y1;
+    if(y2 == y1) // just in case of infinite slope
+    {
+      dy = 0.000001;
+    }
+
+    let dx = x2 - x1;
+    if(x2 == x1) // just in case of infinite slope
+    {
+      dx = 0.000001;
+    }
+
+    let m = dy / dx;
     let p = y1 - m * x1;
     // console.log(slope);
     // if (abs(slope * w / 2) < h / 2 || abs((h / 2) / slope) < w / 2) {

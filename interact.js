@@ -15,7 +15,7 @@ function mousePressed() {
     latex += "\\begin{document}\n \\begin{tikzpicture}[yscale=-1]\n";
     latex += createNodes();
     latex += createEdges();
-    latex += "\\end{tikzpicture}\n\\end{document}";
+    latex += "\\end{tikzpicture}\n\\end{document}\n";
     console.log(latex);
   } else {
     // check if user toggled the mode
@@ -43,8 +43,8 @@ function mousePressed() {
 
         if (v) {
           lvertex = v;
-          lmouseX = mouseX;
-          lmouseY = mouseY;
+          lmouseX = v.x;
+          lmouseY = v.y;
           if (mouseButton == RIGHT) {
             if (keyIsPressed) {
               if (keyCode == CONTROL) {
@@ -90,10 +90,19 @@ function mousePressed() {
 
         } else {
           if (mouseButton == LEFT) {
-            addNewVertex(mouseX, mouseY);
+
+            if(grid.isMagnetic)
+            {
+                addNewVertex(grid.closestLine(mouseX), grid.closestLine(mouseY));
+                lmouseX = grid.closestLine(mouseX);
+                lmouseY =  grid.closestLine(mouseY);
+            }
+            else{
+              addNewVertex(mouseX, mouseY);
+              lmouseX = mouseX;
+              lmouseY = mouseY;
+            }
             isCreatingEdge = true;
-            lmouseX = mouseX;
-            lmouseY = mouseY;
 
           } else {
             selectedVertices = [];
@@ -177,7 +186,13 @@ function mouseReleased() {
   if (isCreatingEdge) {
     let v = VertexPicked(mouseX, mouseY);
     if (!v) {
-      v = new Vertex(mouseX, mouseY, 1);
+      if(grid.isMagnetic)
+      {
+        v = new Vertex(grid.closestLine(mouseX), grid.closestLine(mouseY), 1);
+      }
+      else {
+        v = new Vertex(mouseX, mouseY, 1);
+      }
       Vertices.push(v);
     }
     if (keyIsPressed && keyCode == SHIFT) {
@@ -201,6 +216,20 @@ function mouseReleased() {
       if (v) {
         v.merge(selectedVertices[0]);
         selectedVertices = [v];
+      }
+      else{
+        if(grid.isMagnetic)
+        {
+          lvertex.move(grid.closestLine(mouseX), grid.closestLine(mouseY));
+        }
+      }
+    }
+    else {
+      if(grid.isMagnetic)
+      {
+        for (let v of selectedVertices) {
+          v.snap();
+        }
       }
     }
   } else if (isDraggingSlider) {
@@ -265,6 +294,11 @@ function keyPressed() {
 
   if (key == 'c') {
     centerVertices();
+  }
+
+  if(key == 'g')
+  {
+    grid.isMagnetic = !grid.isMagnetic;
   }
 
 
