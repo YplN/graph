@@ -9,6 +9,7 @@ function mousePressed() {
   isDraggingSlider = false;
 
 
+  // User clicked on Generate Latex?
   if (latexButton.isOn(mouseX, mouseY)) {
     let latex = header();
     // defineColorsUsed();
@@ -22,7 +23,6 @@ function mousePressed() {
     if (modeSlider.isOn(mouseX, mouseY)) {
       modeSlider.updatingSliderWithMouse();
       isDraggingSlider = true;
-      // creatingMode = modeSlider.value;
     } else if (sizeSlider.isOn(mouseX, mouseY)) {
       sizeSlider.updatingSliderWithMouse();
       isDraggingSlider = true;
@@ -36,73 +36,88 @@ function mousePressed() {
         for (let e of selectedEdges) {
           e.setColor(c);
         }
-        //console.log("color picked")
       } else {
         // check if user clicked on a vertex
         let v = VertexPicked(mouseX, mouseY);
 
         if (v) {
-          lvertex = v;
-          lmouseX = v.x;
-          lmouseY = v.y;
-          if (mouseButton == RIGHT) {
-            if (keyIsPressed) {
-              if (keyCode == CONTROL) {
-                let index = selectedVertices.indexOf(v);
-                if (index < 0) {
-                  selectedVertices.push(v);
-                } else {
-                  selectedVertices.splice(index, 1);
-                }
+
+          if (isCreatingCopy) {
+            if (grid.isMagnetic) {
+              for (let v of selectedVertices) {
+                v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+                v.move(grid.closestLine(v.x), grid.closestLine(v.y));
               }
             } else {
-              isDraggingVertex = true;
-              mouseStartDraggingX = mouseX;
-              mouseStartDraggingY = mouseY;
-              if (!selectedVertices.includes(v)) {
-                selectedVertices = [v];
-                selectedEdges = [];
-                // } else if (!selectedVertices.includes(v)) {
-                //   selectedVertices = [v];
-                // }
+              for (let v of selectedVertices) {
+                v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+              }
+            }
+            isCreatingCopy = false;
+            followingMouseVertex = null;
+            selectedEdges = selectedEdgesFromSelectedVertices();
+          } else {
+
+            lvertex = v;
+            lmouseX = v.x;
+            lmouseY = v.y;
+            if (mouseButton == RIGHT) {
+              if (keyIsPressed) {
+                if (keyCode == CONTROL) {
+                  let index = selectedVertices.indexOf(v);
+                  if (index < 0) {
+                    selectedVertices.push(v);
+                  } else {
+                    selectedVertices.splice(index, 1);
+                  }
+                }
+              } else {
+                isDraggingVertex = true;
+                mouseStartDraggingX = mouseX;
+                mouseStartDraggingY = mouseY;
+                if (!selectedVertices.includes(v)) {
+                  selectedVertices = [v];
+                  selectedEdges = [];
+                  // } else if (!selectedVertices.includes(v)) {
+                  //   selectedVertices = [v];
+                  // }
+                }
+              }
+
+              //  else {
+              //   if (!selectedVertices.includes(v) || selectedVertices.length > 1) {
+              //     selectedVertices = [v];
+              //   } else {
+              //     selectedVertices = [];
+              //   }
+              // }
+            } else {
+              // if (selectedVertices.indexOf(v) < 0) {
+              //   selectedVertices = [v];
+              // } else {
+              //   selectedVertices = [];
+              // }
+              if (mouseButton == LEFT) {
+                // Create a new edge if there is a drag
+                isCreatingEdge = true;
               }
             }
 
-            //  else {
-            //   if (!selectedVertices.includes(v) || selectedVertices.length > 1) {
-            //     selectedVertices = [v];
-            //   } else {
-            //     selectedVertices = [];
-            //   }
-            // }
-          } else {
-            // if (selectedVertices.indexOf(v) < 0) {
-            //   selectedVertices = [v];
-            // } else {
-            //   selectedVertices = [];
-            // }
-            if (mouseButton == LEFT) {
-              // Create a new edge if there is a drag
-              isCreatingEdge = true;
-            }
           }
-
-
-        } else {
+        } else // the user didn't click on a vertex
+        {
           if (mouseButton == LEFT) {
-
-            if(grid.isMagnetic)
-            {
-                addNewVertex(grid.closestLine(mouseX), grid.closestLine(mouseY));
-                lmouseX = grid.closestLine(mouseX);
-                lmouseY =  grid.closestLine(mouseY);
-            }
-            else{
+            if (grid.isMagnetic) {
+              addNewVertex(grid.closestLine(mouseX), grid.closestLine(mouseY));
+              lmouseX = grid.closestLine(mouseX);
+              lmouseY = grid.closestLine(mouseY);
+            } else {
               addNewVertex(mouseX, mouseY);
               lmouseX = mouseX;
               lmouseY = mouseY;
             }
             isCreatingEdge = true;
+
 
           } else {
             selectedVertices = [];
@@ -186,11 +201,9 @@ function mouseReleased() {
   if (isCreatingEdge) {
     let v = VertexPicked(mouseX, mouseY);
     if (!v) {
-      if(grid.isMagnetic)
-      {
+      if (grid.isMagnetic) {
         v = new Vertex(grid.closestLine(mouseX), grid.closestLine(mouseY), 1);
-      }
-      else {
+      } else {
         v = new Vertex(mouseX, mouseY, 1);
       }
       Vertices.push(v);
@@ -216,17 +229,13 @@ function mouseReleased() {
       if (v) {
         v.merge(selectedVertices[0]);
         selectedVertices = [v];
-      }
-      else{
-        if(grid.isMagnetic)
-        {
+      } else {
+        if (grid.isMagnetic) {
           lvertex.move(grid.closestLine(mouseX), grid.closestLine(mouseY));
         }
       }
-    }
-    else {
-      if(grid.isMagnetic)
-      {
+    } else {
+      if (grid.isMagnetic) {
         for (let v of selectedVertices) {
           v.snap();
         }
@@ -277,7 +286,7 @@ function keyPressed() {
     modeSlider.next();
     updateSelectMode();
   }
-  if (key == 'm') {
+  if (key == 'm' || key == 'M') {
     if (!lateralBar) {
       animatingLateralBar = true;
       lateralBarOffsetX = 1;
@@ -288,18 +297,28 @@ function keyPressed() {
     }
   }
 
-  if (key == 'o') {
+  if (key == 'o' || key == 'O') {
     oriented = !oriented;
   }
 
-  if (key == 'c') {
-    centerVertices();
+  if (key == 'c' || key == 'C') {
+    if (keyIsDown(17)) {
+      copySelection();
+    } else {
+
+      centerVertices();
+    }
+
   }
 
-  if(key == 'g')
-  {
+  if (key == 'g') {
     grid.isMagnetic = !grid.isMagnetic;
   }
+
+
+
+
+
 
 
 }

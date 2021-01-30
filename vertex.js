@@ -29,12 +29,8 @@ class Vertex {
       // fill(255, map(snapAnimationAlpha, 0, 100, 0, 70));
       angleMode(DEGREES);
       if (snapAnimation >= 100) {
-        fill(255, 35 * cos(2 * snapAnimationAlpha) + 35);
-        // circle(this.x, this.y, VERTEX_SNAP_SIZE * this.size * (sin(snapAnimationAlpha - 180) + 1));
-        // fill(255, 75);
-        circle(this.x, this.y, VERTEX_SNAP_SIZE * this.size * (sin(snapAnimationAlpha) + 1));
-
-        // circle(this.x, this.y, VERTEX_SNAP_SIZE * this.size * (cos(snapAnimationAlpha + 90) + 1));
+        fill(255, 20 * cos(2 * (snapAnimationAlpha) + 180) + 20);
+        circle(this.x, this.y, VERTEX_SNAP_SIZE * this.size * (cos(snapAnimationAlpha) + 1));
       }
 
 
@@ -180,10 +176,8 @@ class Vertex {
 */
   }
 
-  snap()
-  {
-    if(grid.isMagnetic)
-    {
+  snap() {
+    if (grid.isMagnetic) {
       this.move(grid.closestLine(this.x), grid.closestLine(this.y));
     }
   }

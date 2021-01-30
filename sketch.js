@@ -34,13 +34,14 @@ let isSelectioning = false;
 let startSelectionX;
 let startSelectionY;
 
-
+let isCreatingCopy = false;
 
 
 let focusedVertex;
 let fakeVertex;
 let selectedVertices = [];
 let selectVertices = true;
+let followingMouseVertex = null;
 
 let fakeEdge;
 let focusedEdge;
@@ -148,9 +149,13 @@ function draw() {
   // 	console.log(Edges[0].distFrom(mouseX, mouseY));
   // }
 
-  // printEdges();
-  // console.log("V : " + Vertices.length);
-  // console.log("E : " + Edges.length);
+
+  // if (frameCount % 100 == 0) {
+  //   printEdges();
+  //   console.log("V : " + Vertices.length);
+  //   console.log("E : " + Edges.length);
+  //
+  // }
   // console.log(selectedEdges);
   // console.log(selectedVertices);
 
@@ -165,6 +170,8 @@ function draw() {
   showModeSelector();
 
   latexButton.show();
+
+  showCreatingCopy();
 
   // console.log(snapAnimationAlpha);
   //let size = drawSlider();
@@ -203,6 +210,18 @@ function draw() {
   //  textSize(12);
   //  fill(0);
   //  text(textString, 10, 30);
+}
+
+
+function showCreatingCopy() {
+  if (isCreatingCopy) {
+    for (let v of selectedVertices) {
+      v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+      v.show();
+    }
+    mouseStartDraggingX = mouseX;
+    mouseStartDraggingY = mouseY;
+  }
 }
 
 function showModeSelector() {
@@ -262,11 +281,9 @@ function showCreatingEdges() {
 
 
     //line(mouseX, mouseY, lmouseX, lmouseY);
-    if(grid.isMagnetic)
-    {
+    if (grid.isMagnetic) {
       fakeVertex = new Vertex(grid.closestLine(mouseX), grid.closestLine(mouseY), 1);
-    }
-    else {
+    } else {
       fakeVertex = new Vertex(mouseX, mouseY, 1);
     }
 
@@ -626,13 +643,13 @@ function selectEdgesFromBox(x1, y1, x2, y2) {
 
 
     let dy = y2 - y1;
-    if(y2 == y1) // just in case of infinite slope
+    if (y2 == y1) // just in case of infinite slope
     {
       dy = 0.000001;
     }
 
     let dx = x2 - x1;
-    if(x2 == x1) // just in case of infinite slope
+    if (x2 == x1) // just in case of infinite slope
     {
       dx = 0.000001;
     }
@@ -687,7 +704,8 @@ function selectedEdgesFromSelectedVertices() {
   sel = []
   for (let v of selectedVertices) {
     for (let e of v.edges) {
-      sel.push(e);
+      if (!sel.includes(e))
+        sel.push(e);
     }
   }
   return sel;
@@ -764,20 +782,9 @@ function rotateVertices(V, r) {
 
 
 function createNewEdge(u, v) {
-  //printEdges();
-
-  // We check if the user clicked on a vertex
-  //let v = VertexPicked(mouseX, mouseY);
-
-  // if not, we create a new one
-  //if (!v) {
-  //   v = new Vertex(mouseX, mouseY, VERTEX_DEFAULT_SIZE);
-  //   Vertices.push(v);
-  // }
-
-  // let e = new Edge(lvertex, v);
   if (u == v)
     return;
+  // TODO: ORIENTED CASE
   for (let edge of u.edges) {
     if (v.isAnExtremity(edge))
       return;
@@ -788,6 +795,67 @@ function createNewEdge(u, v) {
     e.tellVertices();
 
   }
-  //printEdges();
-  //	console.log("--------------------------");
+}
+
+
+function copySelection() {
+
+  // We check there's something to copy
+  if (selectedVertices.length > 0) {
+    let newVertices = [];
+    let oldVerticesCorrespondance = []; // get a correspondance between the old and new vertices
+
+    for (var i = 0; i < selectedVertices.length; i++) {
+      let v = selectedVertices[i];
+      let newVertex = new Vertex(v.x, v.y, v.size);
+      Vertices.push(newVertex);
+      newVertices.push(newVertex);
+      oldVerticesCorrespondance.push(i);
+    }
+
+    oldEdgesFromSelectedVertices = selectedEdgesFromSelectedVertices();
+
+
+    for (let e of oldEdgesFromSelectedVertices) {
+      let v1 = e.v1;
+      let v2 = e.v2;
+
+      let i1 = selectedVertices.indexOf(v1);
+      let i2 = selectedVertices.indexOf(v2);
+
+      if (i1 >= 0 && i2 >= 0) // We check that both vertices are selected
+      {
+        let newI1 = oldVerticesCorrespondance[i1];
+        let newI2 = oldVerticesCorrespondance[i2];
+
+        // we get there corresponding new vertices thanks to our correspondance array
+        let newV1 = newVertices[newI1];
+        let newV2 = newVertices[newI2];
+
+        let newE = new Edge(newV1, newV2, e.oriented);
+
+        if (!Edges.includes(newE)) {
+          Edges.push(newE);
+          newE.tellVertices();
+        }
+      }
+
+    }
+
+    // We update the new selected vertices to the created ones
+    selectedVertices = newVertices;
+    isCreatingCopy = true;
+
+    // we pick a representent among the copies which will follow the mouse for the paste
+    followingMouseVertex = selectedVertices[0];
+    let dx = mouseX - followingMouseVertex.x;
+    let dy = mouseY - followingMouseVertex.y;
+
+    mouseStartDraggingX = mouseX;
+    mouseStartDraggingY = mouseY;
+
+    for (let v of selectedVertices) {
+      v.translate(dx, dy);
+    }
+  }
 }
