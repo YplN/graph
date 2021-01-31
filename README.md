@@ -16,11 +16,12 @@
 -   Key Delete or Backspace : delete selection
 -   Key Ctrl + 'C' : copy selection, Left-click to paste
 -   Key Spacebar : switch to another selection mode (Edges + Vertices = selection area triggers on both vertices and edges, Edges : only on edges, Vertices : only on Vertices)
--   Click on "Generate LaTeX" and activate the console to get the string of the .tex file
+-   Click on "Generate LaTeX" to get the string of the .tex file
+-   Key Alt + 's' : Shuffle the graph. Because why not?
 
 ### TODO
 
--   Improve LaTeX : colors, no console...
+-   Improve LaTeX : colors...
 -   Merging vertices
 -   Snap vertex to an edge
 -   curving edges!

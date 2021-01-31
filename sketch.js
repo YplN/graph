@@ -72,6 +72,8 @@ let COLOR_HEIGHT;
 
 
 let latexButton;
+let latexCode;
+let isLatexCodeShowing = false;
 
 let grid;
 
@@ -94,10 +96,10 @@ window.addEventListener('keydown', function(e) {
 
 
 // function to disable mousewheel scrolling
-// https://stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript/23606063
-window.addEventListener("wheel", e => e.preventDefault(), {
-  passive: false
-})
+// https: //stackoverflow.com/questions/20026502/prevent-mouse-wheel-scrolling-but-not-scrollbar-event-javascript/23606063
+// window.addEventListener("wheel", e => e.preventDefault(), {
+//   passive: false
+// })
 
 function preload() {
   menuFont = loadFont('assets/CaviarDreams.ttf');
@@ -107,7 +109,7 @@ function preload() {
 
 function setup() {
   // put setup code here
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight - 4);
   BACKGROUND_COLOR = color(25, 25, 25);
   DEFAULT_COLOR = color(250, 232, 207);
   FOCUSED_VERTEX_COLOR = color(237, 92, 92);
@@ -124,7 +126,7 @@ function setup() {
   LATERAL_BAR_SIZE = 0.2 * width;
   SLIDER_BAR_SIZE = 0.8 * LATERAL_BAR_SIZE;
   lateralBarOffsetX = 1;
-  COLORS = [color(238, 83, 83), color(119, 124, 255), color(127, 204, 125), color(249, 229, 124), color(254, 166, 237), color(249, 174, 62), color(187, 101, 254), color(142, 244, 254), color(203, 164, 124), color(142, 254, 203), color(0), color(255)];
+  COLORS = [color(238, 83, 83), color(119, 124, 255), color(127, 204, 125), color(249, 229, 124), color(254, 166, 237), color(249, 174, 62), color(187, 101, 254), color(142, 244, 254), color(203, 164, 124), color(142, 254, 203), BACKGROUND_COLOR, DEFAULT_COLOR];
   COLOR_WIDTH = 0.6 * LATERAL_BAR_SIZE / 3;
   COLOR_HEIGHT = 30;
 
@@ -132,8 +134,10 @@ function setup() {
   sizeSlider = new Slider(width + LATERAL_BAR_SIZE * 0.1 - lateralBarOffsetX, 0.6 * height, SLIDER_BAR_SIZE, 0.5, 2, 1, true, BACKGROUND_COLOR, DEFAULT_COLOR, false);
   modeSlider = new Slider(0.02 * width, 0.9525 * height, 80, 0, 2, 1, true, DEFAULT_COLOR, BACKGROUND_COLOR, false);
 
-  latexButton = new Button(10, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR);
+  latexButton = new Button(10, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
   grid = new Grid(50, DEFAULT_COLOR, true);
+
+
 }
 
 
@@ -857,5 +861,56 @@ function copySelection() {
     for (let v of selectedVertices) {
       v.translate(dx, dy);
     }
+  }
+}
+
+
+
+
+function createLateX() {
+  let latex = header();
+  // defineColorsUsed();
+  latex += "\\begin{document}\n	\\begin{tikzpicture}[yscale=-1]\n";
+  latex += createCoordinates() + "\n";
+  latex += createEdges() + "\n";
+  latex += createNodes() + "\n";
+  latex += "\n\t\\end{tikzpicture}\n\\end{document}\n";
+  return latex;
+}
+
+
+function showLateXCode() {
+
+  latexButton.text = "Exit LateX Code";
+  latexButton.warningMode = true;
+
+
+  let latex = createLateX();
+
+  latexCode = createElement('textarea', latex);
+  latexCode.position(100, 100);
+  latexCode.size(width - 200, height - 200);
+  var textAreaLatex = document.getElementsByTagName("textarea")[0];
+  textAreaLatex.style.resize = "unset";
+  textAreaLatex.style.color = "antiquewhite";
+  textAreaLatex.style.background = "#191919";
+  textAreaLatex.readOnly = "true";
+}
+
+function hideLateXCode() {
+  latexCode.remove();
+  latexButton.warningMode = false;
+  latexButton.text = "Generate LaTeX";
+}
+
+
+
+function shuffleGraph() // Because why not?
+{
+  for (let v of Vertices) {
+    let x = random(0.2 * width, 0.8 * width);
+    let y = random(0.2 * height, 0.8 * height);
+
+    v.move(x, y);
   }
 }

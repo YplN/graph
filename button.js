@@ -1,6 +1,6 @@
 class Button {
   // constructor(x, y, t, f, s, tc, bc, w, h) {
-  constructor(x, y, t, f, s, tc, bc, tcH, bcH) {
+  constructor(x, y, t, f, s, tc, bc, tcH, bcH, tcw, bcw, tcHw, bcHw) {
     this.x = x;
     this.y = y;
     this.text = t;
@@ -10,6 +10,12 @@ class Button {
     this.buttonColor = bc;
     this.textColorHover = tcH;
     this.buttonColorHover = bcH;
+    this.warningMode = false;
+    this.textColorWarning = tcw;
+    this.buttonColorWarning = bcw;
+    this.textColorHoverWarning = tcHw;
+    this.buttonColorHoverWarning = bcHw;
+
     // if (w && h) {
     //   this.width = w;
     //   this.height = h;
@@ -24,13 +30,24 @@ class Button {
   show() {
     rectMode(CORNER);
     strokeWeight(2);
+    let textColor = this.textColor;
+    let buttonColor = this.buttonColor;
+    let textColorHover = this.textColorHover;
+    let buttonColorHover = this.buttonColorHover;
+    if (this.warningMode) {
+      textColor = this.textColorWarning;
+      buttonColor = this.buttonColorWarning;
+      textColorHover = this.textColorHoverWarning;
+      buttonColorHover = this.buttonColorHoverWarning;
+    }
+
 
     if (!this.isOn(mouseX, mouseY)) {
-      stroke(this.textColor);
-      fill(this.buttonColor);
+      stroke(textColor);
+      fill(buttonColor);
     } else {
-      stroke(this.textColorHover);
-      fill(this.buttonColorHover);
+      stroke(textColorHover);
+      fill(buttonColorHover);
     }
     rect(this.x, this.y, this.width, this.height, 10);
 
@@ -40,9 +57,9 @@ class Button {
     noStroke();
 
     if (!this.isOn(mouseX, mouseY)) {
-      fill(this.textColor);
+      fill(textColor);
     } else {
-      fill(this.textColorHover);
+      fill(textColorHover);
     }
     text(this.text, this.x + 10, this.y + this.height - 10);
   }

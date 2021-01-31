@@ -181,10 +181,17 @@ class Vertex {
       this.move(grid.closestLine(this.x), grid.closestLine(this.y));
     }
   }
+  tikzifyCoordinate() {
+    return "\\coordinate (v" + Vertices.indexOf(this) + ") at ( " + this.x / 100 + ", " + this.y / 100 + " );"
+  }
 
 
   tikzifyNode() {
-    return "\\node[scale = " + this.size + ", nodes={white}{}{}{}] (v" + Vertices.indexOf(this) + ") at ( " + this.x / 100 + ", " + this.y / 100 + " ) {};"
+    return "\\node[scale = " + this.size / 2 + ", nodes={white}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};"
   }
+
+  // tikzifyNode() {
+  //   return "\\node[scale = " + this.size + ", nodes={white}{}{}{}] (v" + Vertices.indexOf(this) + ") at ( " + this.x / 100 + ", " + this.y / 100 + " ) {};"
+  // }
 
 }
