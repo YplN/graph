@@ -18,6 +18,7 @@
 -   Key Spacebar : switch to another selection mode (Edges + Vertices = selection area triggers on both vertices and edges, Edges : only on edges, Vertices : only on Vertices)
 -   Click on "Generate LaTeX" to get the string of the .tex file
 -   Key Alt + 's' : Shuffle the graph. Because why not?
+-   Share graph codes ! : Click on "Share or Import Graph". If you want to share your beautiful graph, just copy the code shown and give it to the ones you love. To use a code, paste it in the same window (be sure you remove everything before.)
 
 ### TODO
 
@@ -32,3 +33,4 @@
 -   improve animations
 -   switch grid on/off
 -   grid gap value slider
+-   Shortcuts helper

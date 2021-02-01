@@ -24,9 +24,16 @@ function mousePressed() {
 
 
 
-
+  } else if (shareButton.isOn(mouseX, mouseY)) {
+    if (!isGraphCodeShowing) {
+      showGraphCode();
+      isGraphCodeShowing = true;
+    } else {
+      hideGraphCode();
+      isGraphCodeShowing = false;
+    }
   } else {
-    if (!isLatexCodeShowing) {
+    if (!isLatexCodeShowing && !isGraphCodeShowing) {
       // check if user toggled the mode
       if (modeSlider.isOn(mouseX, mouseY)) {
         modeSlider.updatingSliderWithMouse();
@@ -177,22 +184,22 @@ function mouseDragged() {
       if (selectVertices) {
         if (selectedVertices.length > 0) {
           for (let v of selectedVertices) {
-            v.size = size;
+            v.setSize(size);
           }
         } else {
           for (let v of Vertices) {
-            v.size = size;
+            v.setSize(size);
           }
         }
       }
       if (selectEdges) {
         if (selectedEdges.length > 0) {
           for (let e of selectedEdges) {
-            e.size = size;
+            e.setSize(size);
           }
         } else {
           for (let e of Edges) {
-            e.size = size;
+            e.setSize(size);
           }
         }
       }
@@ -332,6 +339,12 @@ function keyPressed() {
     if (keyCode == ESCAPE) {
       hideLateXCode();
       isLatexCodeShowing = false;
+
+      if (isGraphCodeShowing) {
+        hideGraphCode();
+        isGraphCodeShowing = false;
+
+      }
     }
 
   }

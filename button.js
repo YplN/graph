@@ -51,7 +51,7 @@ class Button {
     }
     rect(this.x, this.y, this.width, this.height, 10);
 
-    textAlign(LEFT, BASELINE);
+    textAlign(CENTER, BASELINE);
     textFont(this.font);
     textSize(this.size);
     noStroke();
@@ -61,7 +61,7 @@ class Button {
     } else {
       fill(textColorHover);
     }
-    text(this.text, this.x + 10, this.y + this.height - 10);
+    text(this.text, this.x + this.width / 2, this.y + this.height - 10);
   }
 
   isOn(x, y) {

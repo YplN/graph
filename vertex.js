@@ -3,7 +3,7 @@ class Vertex {
     this.x = x;
     this.y = y;
     this.size = size;
-    this.edges = [];
+    // this.edges = [];
     this.color = BACKGROUND_COLOR;
   }
 
@@ -62,7 +62,7 @@ class Vertex {
   }
 
   addEdge(e) {
-    this.edges.push(e);
+    this.incidentEdges().push(e);
 
     // console.log(this.toString() + '++++++++');
     // for (e of this.edges) {
@@ -80,23 +80,48 @@ class Vertex {
   }
 
   setSize(s) {
-    this.size = s;
+    this.size = round(s * 100) / 100;
+  }
+
+  inEdges() {
+    let inE = [];
+    for (let e of Edges) {
+      if (this.isAnExtremity(e) == 2) {
+        inE.push(e);
+      }
+    }
+    return inE;
+  }
+
+  outEdges() {
+    let outE = [];
+    for (let e of Edges) {
+      if (this.isAnExtremity(e) == 1) {
+        outE.push(e);
+      }
+    }
+    return outE;
+  }
+
+  incidentEdges() {
+    return this.outEdges().concat(this.inEdges());
   }
 
 
   clearEdge(e) {
-
-    for (var i = this.edges.length - 1; i >= 0; i--) {
-      if (this.edges[i].toKill) {
-        this.edges.splice(i, 1);
+    let edges = this.incidentEdges();
+    for (var i = edges.length - 1; i >= 0; i--) {
+      if (edges[i].toKill) {
+        edges.splice(i, 1);
       }
     }
   }
 
   clearEdges() {
-    for (var i = this.edges.length - 1; i >= 0; i--) {
-      if (this.edges[i].toKill) {
-        this.edges.splice(i, 1);
+    let edges = this.incidentEdges();
+    for (var i = edges.length - 1; i >= 0; i--) {
+      if (edges[i].toKill) {
+        edges.splice(i, 1);
       }
     }
     /*
@@ -121,7 +146,7 @@ class Vertex {
   }
 
   kill() {
-    for (let e of this.edges) {
+    for (let e of this.incidentEdges()) {
       e.kill();
     }
     Vertices.splice(Vertices.indexOf(this), 1);
@@ -132,12 +157,14 @@ class Vertex {
   }
 
   updateNeighbor(e, v) {
-    let index = this.edges.includes(e);
+    let edges = this.incidentEdges();
+
+    let index = edges.includes(e);
     if (index > 0) {
-      if (this.isAnExtremity(this.edges[index]) == 1) {
-        this.edges[index].v2 = v;
+      if (this.isAnExtremity(edges[index]) == 1) {
+        edges[index].v2 = v;
       } else {
-        this.edges[index].v1 = v;
+        edges[index].v1 = v;
       }
     }
   }
@@ -186,6 +213,8 @@ class Vertex {
   }
 
 
+
+
   tikzifyNode() {
     return "\\node[scale = " + this.size / 2 + ", nodes={white}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};"
   }
@@ -193,5 +222,10 @@ class Vertex {
   // tikzifyNode() {
   //   return "\\node[scale = " + this.size + ", nodes={white}{}{}{}] (v" + Vertices.indexOf(this) + ") at ( " + this.x / 100 + ", " + this.y / 100 + " ) {};"
   // }
+
+
+  codifyNode() {
+    return "[" + this.x + "," + this.y + "," + this.size + "," + COLORS.indexOf(this.color) + "]";
+  }
 
 }

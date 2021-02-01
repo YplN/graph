@@ -24,6 +24,10 @@ class Edge {
     this.color = c;
   }
 
+  setSize(s) {
+    this.size = round(s * 100) / 100;
+  }
+
   show() {
     if (modern) {
       strokeWeight(EDGE_DEFAULT_STROKE * this.size * 2 + 10);
@@ -107,7 +111,16 @@ class Edge {
 
 
   tikzifyEdge() {
-    // TODO: ORIENTED CASE 
+    // TODO: ORIENTED CASE
     return "\\draw[line width = " + this.size + "] " + "(v" + Vertices.indexOf(this.v1) + ") -- (v" + Vertices.indexOf(this.v2) + ");";
   }
+
+
+  codifyNode() {
+    let o = 0;
+    if (this.oriented)
+      o = 1;
+    return "[" + Vertices.indexOf(this.v1) + "," + Vertices.indexOf(this.v2) + "," + this.size + "," + o + "," + COLORS.indexOf(this.color) + "]";
+  }
+
 }

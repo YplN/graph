@@ -1,5 +1,7 @@
 let Vertices = [];
 let Edges = [];
+let data = new Data();
+
 
 let BACKGROUND_COLOR;
 let DEFAULT_COLOR;
@@ -75,6 +77,10 @@ let latexButton;
 let latexCode;
 let isLatexCodeShowing = false;
 
+let shareButton;
+let graphCode;
+let isGraphCodeShowing = false;
+
 let grid;
 
 let oneFrameMoreToDo = true;
@@ -134,10 +140,18 @@ function setup() {
   sizeSlider = new Slider(width + LATERAL_BAR_SIZE * 0.1 - lateralBarOffsetX, 0.6 * height, SLIDER_BAR_SIZE, 0.5, 2, 1, true, BACKGROUND_COLOR, DEFAULT_COLOR, false);
   modeSlider = new Slider(0.02 * width, 0.9525 * height, 80, 0, 2, 1, true, DEFAULT_COLOR, BACKGROUND_COLOR, false);
 
-  latexButton = new Button(10, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+  latexButton = new Button(10, 55, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+  grid = new Grid(50, DEFAULT_COLOR, true);
+
+  shareButton = new Button(10, 10, "Share or Import Graph", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
   grid = new Grid(50, DEFAULT_COLOR, true);
 
 
+  // window.location.href = "http://stackoverflow.com";
+
+  // createGraph("?V=[[950,700,1,10],[700,400,1,10],[750,250,1,10],[850,200,1,10],[950,300,1,10],[1050,200,1,10],[1150,250,1,10],[1200,400,1,10]]&E=[[0,1,1,0,11],[1,2,1,0,11],[2,3,1,0,11],[3,4,1,0,11],[4,5,1,0,11],[5,6,1,0,11],[6,7,1,0,11],[7,0,1,0,11]]");
+
+  // createGraph("?V=[[750,550,1,10],[850,350,0.73,0],[1000,500,0.73,0],[950,650,1,10],[700,650,1,10],[550,450,1,6],[700,300,1,10],[550,250,1,6],[400,550,1,6],[650,850,1,10],[900,750,0.5,3],[1150,850,0.5,3],[1200,500,1,10],[1050,250,0.73,0],[1600,350,1,10]]&E=[[0,1,0.73,0,0],[1,2,0.73,0,0],[2,3,0.73,0,0],[3,4,1,0,11],[4,5,1,0,6],[5,6,1,0,6],[6,0,1,0,11],[6,7,1,0,6],[7,8,1,0,6],[8,9,1,0,6],[9,10,0.5,0,3],[10,11,0.5,0,3],[11,12,0.5,0,3],[12,13,0.73,0,0],[13,1,0.73,0,0]]");
 }
 
 
@@ -156,8 +170,8 @@ function draw() {
 
   // if (frameCount % 100 == 0) {
   //   printEdges();
-  //   console.log("V : " + Vertices.length);
-  //   console.log("E : " + Edges.length);
+  // console.log("V : " + Vertices.length);
+  // console.log("E : " + Edges.length);
   //
   // }
   // console.log(selectedEdges);
@@ -174,6 +188,7 @@ function draw() {
   showModeSelector();
 
   latexButton.show();
+  shareButton.show();
 
   showCreatingCopy();
 
@@ -214,6 +229,30 @@ function draw() {
   //  textSize(12);
   //  fill(0);
   //  text(textString, 10, 30);
+
+  // for (let v of Vertices) {
+  //   console.log(v.inEdges());
+  //   console.log(v.outEdges());
+  //   console.log(v.incidentEdges());
+  // }
+
+  // if (frameCount % 30 == 0) {
+  //   data.update(Vertices, Edges);
+  //   console.log(JSON.stringify(data));
+  // }
+
+  // for (let v of Vertices) {
+  //   console.log(v.toString());
+  // }
+
+  if (frameCount % 30 == 0) {
+    // console.log(Vertices[0].codifyNode());
+    // if (Edges.length > 0) {
+    //   console.log(Edges[0].codifyNode());
+    // }
+    console.log(createCode());
+  }
+
 }
 
 
@@ -707,7 +746,7 @@ function selectEdgesFromBox(x1, y1, x2, y2) {
 function selectedEdgesFromSelectedVertices() {
   sel = []
   for (let v of selectedVertices) {
-    for (let e of v.edges) {
+    for (let e of v.incidentEdges()) {
       if (!sel.includes(e))
         sel.push(e);
     }
@@ -789,7 +828,7 @@ function createNewEdge(u, v) {
   if (u == v)
     return;
   // TODO: ORIENTED CASE
-  for (let edge of u.edges) {
+  for (let edge of u.incidentEdges()) {
     if (v.isAnExtremity(edge))
       return;
   }
@@ -888,9 +927,10 @@ function showLateXCode() {
   let latex = createLateX();
 
   latexCode = createElement('textarea', latex);
+  latexCode.id('latexcode')
   latexCode.position(100, 100);
   latexCode.size(width - 200, height - 200);
-  var textAreaLatex = document.getElementsByTagName("textarea")[0];
+  var textAreaLatex = document.getElementById('latexcode');
   textAreaLatex.style.resize = "unset";
   textAreaLatex.style.color = "antiquewhite";
   textAreaLatex.style.background = "#191919";
@@ -904,6 +944,45 @@ function hideLateXCode() {
 }
 
 
+function showGraphCode() {
+
+  shareButton.text = "Import Graph Code";
+  shareButton.warningMode = true;
+
+  let code = createCode();
+
+  graphCode = createElement('textarea', code);
+  graphCode.id('graphcode');
+  // graphCode.setAttribute("id", "graphcode")
+  graphCode.position(100, 100);
+  graphCode.size(width - 200, height - 200);
+  var textAreaLatex = document.getElementById("graphcode");
+  textAreaLatex.style.resize = "unset";
+  textAreaLatex.style.color = "antiquewhite";
+  textAreaLatex.style.background = "#191919";
+}
+
+
+function hideGraphCode() {
+  let code = graphCode.value();
+
+  if (isValidCode(code)) {
+    createGraph(code);
+  }
+  graphCode.remove();
+  shareButton.warningMode = false;
+  shareButton.text = "Share or Import Graph";
+
+}
+
+// TODO: IMPROVE THIS FUNCTION
+function isValidCode(code) {
+  return code.length > 10;
+}
+
+
+
+
 
 function shuffleGraph() // Because why not?
 {
@@ -914,3 +993,111 @@ function shuffleGraph() // Because why not?
     v.move(x, y);
   }
 }
+
+
+
+
+
+function listifyFloats(s) {
+  s = s.substring(1, s.length - 1);
+  let l = s.split(",");
+
+  let values = [];
+
+  for (let f of l) {
+    values.push(parseFloat(f));
+  }
+
+  return values;
+
+}
+
+function codifyVertices() {
+  let code = "V=[";
+  for (let v of Vertices) {
+    code += v.codifyNode() + ",";
+  }
+  if (Vertices.length > 0)
+    code = code.slice(0, -1);
+  code += "]";
+
+  return code;
+}
+
+
+
+function codifyEdges() {
+  let code = "E=[";
+
+  for (let e of Edges) {
+    code += e.codifyNode() + ",";
+  }
+  if (Edges.length > 0)
+    code = code.slice(0, -1);
+
+  code += "]";
+  return code;
+}
+
+function createCode() {
+  let code = "?";
+  code += codifyVertices() + "&";
+  code += codifyEdges();
+
+  return code;
+}
+
+
+function createGraph(code) {
+  var searchParams = new URLSearchParams(code);
+  var V = JSON.parse(searchParams.get("V"));
+  var E = JSON.parse(searchParams.get("E"));
+
+  Vertices = [];
+  Edges = [];
+
+  for (let v of V) {
+    makeNodeOutOfList(v);
+  }
+
+  for (let e of E) {
+    makeEdgeOutOfList(e);
+  }
+  // console.log("EDGES " + E, "\n VERTICES " + V);
+  // console.log(JSON.parse(V));
+}
+
+
+function makeNodeOutOfList(L) {
+  let x = L[0];
+  let y = L[1];
+  let size = L[2];
+  let color = COLORS[L[3]];
+
+  let v = new Vertex(x, y, size);
+  v.setColor(color);
+  Vertices.push(v);
+
+}
+
+
+function makeEdgeOutOfList(L) {
+  let indexV1 = L[0];
+  let indexV2 = L[1];
+  let size = L[2];
+  let oriented = true;
+  if (L[3] == 0) {
+    oriented = false;
+  }
+  let color = COLORS[L[4]];
+
+  let e = new Edge(Vertices[indexV1], Vertices[indexV2], oriented);
+  e.setColor(color);
+  e.setSize(size);
+  Edges.push(e);
+
+}
+
+
+
+//?V=[[950,700,1,10],[700,400,1,10],[750,250,1,10],[850,200,1,10],[950,300,1,10],[1050,200,1,10],[1150,250,1,10],[1200,400,1,10]]&E=[[0,1,1,0,11],[1,2,1,0,11],[2,3,1,0,11],[3,4,1,0,11],[4,5,1,0,11],[5,6,1,0,11],[6,7,1,0,11],[7,0,1,0,11]]
