@@ -30,6 +30,7 @@ let lvertex;
 let isCreatingEdge;
 let isDeletingVertex;
 let isDraggingVertex;
+let isTranslating = false;
 let mouseStartDraggingX;
 let mouseStartDraggingY;
 let isSelectioning = false;
@@ -140,14 +141,11 @@ function setup() {
   sizeSlider = new Slider(width + LATERAL_BAR_SIZE * 0.1 - lateralBarOffsetX, 0.6 * height, SLIDER_BAR_SIZE, 0.5, 2, 1, true, BACKGROUND_COLOR, DEFAULT_COLOR, false);
   modeSlider = new Slider(0.02 * width, 0.9525 * height, 80, 0, 2, 1, true, DEFAULT_COLOR, BACKGROUND_COLOR, false);
 
-  latexButton = new Button(10, 55, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+  shareButton = new Button(10, 10, "Share or Load", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+  latexButton = new Button(20 + shareButton.width, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+
   grid = new Grid(50, DEFAULT_COLOR, true);
 
-  shareButton = new Button(10, 10, "Share or Import Graph", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
-  grid = new Grid(50, DEFAULT_COLOR, true);
-
-
-  // window.location.href = "http://stackoverflow.com";
 
   // createGraph("?V=[[950,700,1,10],[700,400,1,10],[750,250,1,10],[850,200,1,10],[950,300,1,10],[1050,200,1,10],[1150,250,1,10],[1200,400,1,10]]&E=[[0,1,1,0,11],[1,2,1,0,11],[2,3,1,0,11],[3,4,1,0,11],[4,5,1,0,11],[5,6,1,0,11],[6,7,1,0,11],[7,0,1,0,11]]");
 
@@ -160,6 +158,7 @@ function draw() {
   background(BACKGROUND_COLOR);
   // console.log(frameCount);
   UpdateEgdes();
+
 
   grid.show();
   showGraph();
@@ -178,7 +177,6 @@ function draw() {
   // console.log(selectedVertices);
 
   drawLateralBar();
-  //drawModeSelector();
   drawSelectionBox(mouseX, mouseY, startSelectionX, startSelectionY);
 
   updateSizeSlider();
@@ -192,15 +190,6 @@ function draw() {
 
   showCreatingCopy();
 
-  // console.log(snapAnimationAlpha);
-  //let size = drawSlider();
-
-  // if (size) {
-  //   for (let v of selectedVertices) {
-  //     v.setSize(size);
-  //   }
-  // }
-  // noLoop();
 
   // if (animatingLateralBar || creatingModeAnimation) {
   //   loop();
@@ -212,46 +201,6 @@ function draw() {
   //   noLoop();
   // }
 
-
-  //  let textString = `azndoazndoanzdoanoda zd azidjiajzd oaj doadh auzhduahzdu ahiod ajzd ohazd auih zdjazo do
-  //  jzdjazdjopa zda
-  //  azd ajdâ zd
-  //  (zd
-  //   ajzdad az
-  // d azdoa zd) => {
-  //
-  //  }`
-  //  let bbox = menuFont.textBounds(textString, 10, 30, 12);
-  //  fill(DEFAULT_COLOR);
-  //  rect(bbox.x, bbox.y, bbox.w, bbox.h);
-  //  textAlign(LEFT, TOP);
-  //  textFont(menuFont);
-  //  textSize(12);
-  //  fill(0);
-  //  text(textString, 10, 30);
-
-  // for (let v of Vertices) {
-  //   console.log(v.inEdges());
-  //   console.log(v.outEdges());
-  //   console.log(v.incidentEdges());
-  // }
-
-  // if (frameCount % 30 == 0) {
-  //   data.update(Vertices, Edges);
-  //   console.log(JSON.stringify(data));
-  // }
-
-  // for (let v of Vertices) {
-  //   console.log(v.toString());
-  // }
-
-  if (frameCount % 30 == 0) {
-    // console.log(Vertices[0].codifyNode());
-    // if (Edges.length > 0) {
-    //   console.log(Edges[0].codifyNode());
-    // }
-    console.log(createCode());
-  }
 
 }
 
@@ -420,46 +369,6 @@ function modeClicked(x, y) {
   return (abs(0.02 * width - x) < 0.055 * width && abs(0.9525 * height - y) < 30);
 }
 
-
-// function drawModeSelector() {
-//   strokeWeight(LINE_STROKE);
-//   stroke(DEFAULT_COLOR);
-//   line(0.02 * width, 0.9525 * height, 0.055 * width, 0.9525 * height);
-//   textFont(menuFont);
-//   textAlign(LEFT, CENTER);
-//   textSize(20);
-//   noStroke();
-//   fill(DEFAULT_COLOR);
-//
-//   if (creatingModeAnimation) {
-//     if (creatingMode) {
-//       creatingModeOffsetX -= 5;
-//       if (creatingModeOffsetX <= 0) {
-//         creatingModeOffsetX = 0;
-//         creatingModeAnimation = false;
-//       }
-//     } else {
-//       creatingModeOffsetX += 5;
-//       if (creatingModeOffsetX >= 0.035 * width) {
-//         creatingModeOffsetX = 0.035 * width;
-//         creatingModeAnimation = false;
-//       }
-//
-//     }
-//   }
-//
-//   if (creatingMode) {
-//     text("Creating", 0.07 * width, 0.95 * height);
-//     circle(0.02 * width + creatingModeOffsetX, 0.9525 * height, 30);
-//   } else {
-//     text("Moving", 0.07 * width, 0.95 * height);
-//     circle(0.02 * width + creatingModeOffsetX, 0.9525 * height, 30);
-//   }
-//   fill(BACKGROUND_COLOR);
-//   circle(0.02 * width + creatingModeOffsetX, 0.9525 * height, map(creatingModeOffsetX, 0, 0.035 * width, 0, 25));
-//
-//
-// }
 
 function drawLateralBar() {
   if (animatingLateralBar || lateralBar) {
@@ -699,11 +608,6 @@ function selectEdgesFromBox(x1, y1, x2, y2) {
 
     let m = dy / dx;
     let p = y1 - m * x1;
-    // console.log(slope);
-    // if (abs(slope * w / 2) < h / 2 || abs((h / 2) / slope) < w / 2) {
-    //   sel.push(e);
-    //   console.log(e.toString());
-    // }
 
     // x coordinate of the intersection between the (infinite) line
     // going from the extremities of the edges and the rectangle
@@ -736,7 +640,6 @@ function selectEdgesFromBox(x1, y1, x2, y2) {
       (minY <= yiRight && yiRight <= maxY && min(x1, x2) <= xiRight && xiRight <= max(x1, x2)) ||
       (minX <= min(x1, x2) && max(x1, x2) <= maxX && minY <= min(y1, y2) && max(y1, y2) <= maxY)) {
       sel.push(e);
-      // console.log(e.toString());
     }
   }
   return sel;
@@ -946,14 +849,13 @@ function hideLateXCode() {
 
 function showGraphCode() {
 
-  shareButton.text = "Import Graph Code";
+  shareButton.text = "Import Graph";
   shareButton.warningMode = true;
 
   let code = createCode();
 
   graphCode = createElement('textarea', code);
   graphCode.id('graphcode');
-  // graphCode.setAttribute("id", "graphcode")
   graphCode.position(100, 100);
   graphCode.size(width - 200, height - 200);
   var textAreaLatex = document.getElementById("graphcode");
@@ -971,7 +873,7 @@ function hideGraphCode() {
   }
   graphCode.remove();
   shareButton.warningMode = false;
-  shareButton.text = "Share or Import Graph";
+  shareButton.text = "Share or Load";
 
 }
 
@@ -987,11 +889,13 @@ function isValidCode(code) {
 function shuffleGraph() // Because why not?
 {
   for (let v of Vertices) {
-    let x = random(0.2 * width, 0.8 * width);
+    let x = random(0.15 * width, 0.85 * width);
     let y = random(0.2 * height, 0.8 * height);
 
     v.move(x, y);
   }
+
+  centerVertices();
 }
 
 
@@ -1100,4 +1004,23 @@ function makeEdgeOutOfList(L) {
 
 
 
-//?V=[[950,700,1,10],[700,400,1,10],[750,250,1,10],[850,200,1,10],[950,300,1,10],[1050,200,1,10],[1150,250,1,10],[1200,400,1,10]]&E=[[0,1,1,0,11],[1,2,1,0,11],[2,3,1,0,11],[3,4,1,0,11],[4,5,1,0,11],[5,6,1,0,11],[6,7,1,0,11],[7,0,1,0,11]]
+
+function zoomFrom(x, y, s) {
+  for (let v of Vertices) {
+    angleMode(RADIANS);
+    let rho = dist(x, y, v.x, v.y);
+    let newRho = s * rho;
+
+    let xM = (v.x - x);
+    if (v.x == x) {
+      xM = 0.000001;
+    }
+    let yM = (v.y - y);
+    let angle = atan2(yM, xM);
+
+    let xM2 = newRho * cos(angle);
+    let yM2 = newRho * sin(angle);
+    v.move(xM2 + x, yM2 + y);
+  }
+
+}

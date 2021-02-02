@@ -55,7 +55,9 @@ class Edge {
 
     line(this.v1.x, this.v1.y, this.v2.x, this.v2.y);
     if (this.oriented) {
+      //https://stackoverflow.com/questions/44874243/drawing-arrows-in-p5js
       push() //start new drawing state
+      angleMode(RADIANS);
       let angle = atan2(this.v1.y - this.v2.y, this.v1.x - this.v2.x); //gets the angle of the line
       translate(this.v2.x, this.v2.y); //translates to the destination vertex
       rotate(angle - HALF_PI); //rotates the arrow point
@@ -70,20 +72,6 @@ class Edge {
   tellVertices() {
     this.v1.addEdge(this);
     this.v2.addEdge(this);
-    // if (!this.v2.isAnExtremity(this)) {
-    // 	this.v2.addEgde(this);
-    // 	console.log("Oh");
-    // } else {
-    // 	console.log(this.toString());
-    // }
-    //
-    // if (!this.v1.isAnExtremity(this)) {
-    // 	this.v1.addEgde(this);
-    // 	console.log("Oh");
-    // }
-
-    //console.log(this.v1.edges);
-    //console.log(this.v2.edges);
   }
 
   isEquals(e) {

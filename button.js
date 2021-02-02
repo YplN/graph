@@ -1,5 +1,4 @@
 class Button {
-  // constructor(x, y, t, f, s, tc, bc, w, h) {
   constructor(x, y, t, f, s, tc, bc, tcH, bcH, tcw, bcw, tcHw, bcHw) {
     this.x = x;
     this.y = y;
@@ -16,14 +15,9 @@ class Button {
     this.textColorHoverWarning = tcHw;
     this.buttonColorHoverWarning = bcHw;
 
-    // if (w && h) {
-    //   this.width = w;
-    //   this.height = h;
-    // } else {
     let bbox = f.textBounds(t, 0, 0, s);
     this.width = bbox.w + 20;
     this.height = bbox.h + 20;
-    // }
   }
 
 

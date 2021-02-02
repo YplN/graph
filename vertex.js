@@ -1,15 +1,15 @@
 class Vertex {
   constructor(x, y, size) {
-    this.x = x;
-    this.y = y;
+    this.x = round(x * 100) / 100;
+    this.y = round(y * 100) / 100;
     this.size = size;
     // this.edges = [];
     this.color = BACKGROUND_COLOR;
   }
 
   move(x, y) {
-    this.x = x;
-    this.y = y;
+    this.x = round(x * 100) / 100;
+    this.y = round(y * 100) / 100;
   }
 
   setColor(c) {
@@ -26,7 +26,6 @@ class Vertex {
 
     if (isCreatingEdge) {
       noStroke();
-      // fill(255, map(snapAnimationAlpha, 0, 100, 0, 70));
       angleMode(DEGREES);
       if (snapAnimation >= 100) {
         fill(255, 20 * cos(2 * (snapAnimationAlpha) + 180) + 20);
@@ -57,18 +56,12 @@ class Vertex {
   }
 
   translate(x, y) {
-    this.x += x;
-    this.y += y;
+    this.x += round(x * 100) / 100;;
+    this.y += round(y * 100) / 100;;
   }
 
   addEdge(e) {
-    this.incidentEdges().push(e);
-
-    // console.log(this.toString() + '++++++++');
-    // for (e of this.edges) {
-    // 	console.log(e.toString());
-    // }
-    // console.log('______');
+    // this.incidentEdges().push(e);
   }
 
   isAnExtremity(e) {
@@ -124,25 +117,6 @@ class Vertex {
         edges.splice(i, 1);
       }
     }
-    /*
-		for (var i = this.edges.length - 1; i >= 0; i--) {
-			if (this.isAnExtremity(this.edges[i]) == 1) {
-				this.edges[i].v2.clearEdge(this.edges[i]);
-			} else {
-				this.edges[i].v1.clearEdge(this.edges[i]);
-			}
-		}
-*/
-    /*
-		for (var i = Edges.length - 1; i >= 0; i--) {
-			console.log(this.isAnExtremity(Edges[i]));
-			if (this.isAnExtremity(Edges[i])) {
-				console.log(Edges);
-				Edges.splice(i, 1);
-				print(Edges);
-			}
-		}
-    */
   }
 
   kill() {
@@ -209,23 +183,17 @@ class Vertex {
     }
   }
   tikzifyCoordinate() {
-    return "\\coordinate (v" + Vertices.indexOf(this) + ") at ( " + this.x / 100 + ", " + this.y / 100 + " );"
+    return "\\coordinate (v" + Vertices.indexOf(this) + ") at ( " + round(this.x * 100) / 10000 + ", " + round(this.y * 100) / 10000 + " );"
   }
-
-
 
 
   tikzifyNode() {
     return "\\node[scale = " + this.size / 2 + ", nodes={white}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};"
   }
 
-  // tikzifyNode() {
-  //   return "\\node[scale = " + this.size + ", nodes={white}{}{}{}] (v" + Vertices.indexOf(this) + ") at ( " + this.x / 100 + ", " + this.y / 100 + " ) {};"
-  // }
-
 
   codifyNode() {
-    return "[" + this.x + "," + this.y + "," + this.size + "," + COLORS.indexOf(this.color) + "]";
+    return "[" + round(this.x * 100) / 100 + "," + round(this.y * 100) / 100 + "," + this.size + "," + COLORS.indexOf(this.color) + "]";
   }
 
 }

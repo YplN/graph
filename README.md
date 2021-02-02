@@ -1,9 +1,8 @@
 # Graph Drawer !
 
- Go to https://ypln.github.io/graph/ 
+ Go to <https://ypln.github.io/graph/>
 
 ### How to use it
-
 
 -   Left-click : Create a new vertex
 -   Left-click + dragging : Create a new edge, and possibly one or two vertices if the extremities do not exist.
@@ -12,7 +11,9 @@
 -   Right-click + dragging : create a selection area
 -   Ctrl + Right-click (on a vertex) : add/remove a vertex from the selection
 -   Shift + Left-click + dragging (from a vertex) : create new edges from the initial vertex and the selected vertices to a new vertex (created if needed)
--   Mouse-wheel : rotate the selected vertices (the centre of rotation is its centroid)
+-   Middle-click + dragging : translate all the vertices
+-   Mouse-wheel : Zoom in/out according to your mouse position
+-   Shift + Mouse-wheel : rotate the selected vertices (the centre of rotation is its centroid)
 -   Key 'o' : switch to oriented graphs (needs debug)
 -   Key 'g' : toggle the magnetic grid
 -   Key 'm' : toggle the menu
@@ -25,9 +26,9 @@
 
 ### TODO
 
--   Improve LaTeX : colors...
--   Merging vertices
--   Snap vertex to an edge
+-   improve LaTeX : colors...
+-   merging vertices
+-   snap vertex to an edge
 -   curving edges!
 -   select edge by right-click
 -   copy/paste subgraph (do some additional tests...)
@@ -36,4 +37,5 @@
 -   improve animations
 -   switch grid on/off
 -   grid gap value slider
--   Shortcuts helper
+-   shortcuts helper
+-   give labels to vertices
