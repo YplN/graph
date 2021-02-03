@@ -33,12 +33,16 @@ let isDraggingVertex;
 let isTranslating = false;
 let mouseStartDraggingX;
 let mouseStartDraggingY;
+let mouseStartDraggingFromBeginingX;
+let mouseStartDraggingFromBeginingY;
 let isSelectioning = false;
 let startSelectionX;
 let startSelectionY;
 
 let isCreatingCopy = false;
 
+let isDraggingMiddlePoint = false;
+let ledge;
 
 let focusedVertex;
 let fakeVertex;
@@ -207,10 +211,16 @@ function draw() {
 
 function showCreatingCopy() {
   if (isCreatingCopy) {
+    for (let e of selectedEdges) {
+      e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+      e.show();
+    }
     for (let v of selectedVertices) {
       v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
       v.show();
     }
+
+
     mouseStartDraggingX = mouseX;
     mouseStartDraggingY = mouseY;
   }
@@ -532,6 +542,15 @@ function VertexPicked(x, y) {
 }
 
 
+function EdgeMiddlePointPicked(x, y) {
+  for (let i = Edges.length - 1; i >= 0; i--) {
+    if (Edges[i].isOnMiddlePoint(mouseX, mouseY)) {
+      return Edges[i];
+    }
+  }
+  return;
+}
+
 function VertexPickedNotV(x, y, v) {
   for (let i = Vertices.length - 1; i >= 0; i--) {
     if (Vertices[i] != v && Vertices[i].isOn(mouseX, mouseY)) {
@@ -680,6 +699,7 @@ function drawSelectionBox(x1, y1, x2, y2) {
 
 
 function centerVertices() {
+  // TODO: adapt zoom to the centering if the vertices are further ??
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -695,11 +715,14 @@ function centerVertices() {
   let vWidth = maxX - minX;
   let vHeight = maxY - minY;
 
-  if (vWidth <= width && vHeight <= height) {
-    for (let v of Vertices) {
-      v.translate((width - vWidth) / 2 - minX, (height - vHeight) / 2 - minY);
-    }
+  for (let v of Vertices) {
+    v.translate((width - vWidth) / 2 - minX, (height - vHeight) / 2 - minY);
   }
+
+  for (let e of Edges) {
+    e.translateMiddlePoint((width - vWidth) / 2 - minX, (height - vHeight) / 2 - minY);
+  }
+
 }
 
 
@@ -720,6 +743,27 @@ function rotateVertices(V, r) {
   for (let v of V) {
     //https://stackoverflow.com/questions/20104611/find-new-coordinates-of-a-point-after-rotation
     v.move((v.y - yAv) * sin(r) + (v.x - xAv) * cos(r) + xAv, (v.y - yAv) * cos(r) - (v.x - xAv) * sin(r) + yAv);
+  }
+
+}
+
+
+function rotateMiddlePoint(E, V, r) {
+  let xAv = 0;
+  let yAv = 0;
+
+  for (let v of V) {
+    xAv += v.x;
+    yAv += v.y;
+  }
+
+  xAv = xAv / V.length;
+  yAv = yAv / V.length;
+
+  angleMode(RADIANS);
+  for (let e of E) {
+    //https://stackoverflow.com/questions/20104611/find-new-coordinates-of-a-point-after-rotation
+    e.moveMiddlePoint((e.oY - yAv) * sin(r) + (e.oX - xAv) * cos(r) + xAv, (e.oY - yAv) * cos(r) - (e.oX - xAv) * sin(r) + yAv);
   }
 
 }
@@ -759,6 +803,7 @@ function copySelection() {
       oldVerticesCorrespondance.push(i);
     }
 
+    let newEdges = [];
     oldEdgesFromSelectedVertices = selectedEdgesFromSelectedVertices();
 
 
@@ -783,6 +828,7 @@ function copySelection() {
         if (!Edges.includes(newE)) {
           Edges.push(newE);
           newE.tellVertices();
+          newEdges.push(newE);
         }
       }
 
@@ -790,6 +836,7 @@ function copySelection() {
 
     // We update the new selected vertices to the created ones
     selectedVertices = newVertices;
+    selectedEdges = newEdges;
     isCreatingCopy = true;
 
     // we pick a representent among the copies which will follow the mouse for the paste
@@ -802,6 +849,10 @@ function copySelection() {
 
     for (let v of selectedVertices) {
       v.translate(dx, dy);
+    }
+
+    for (let e of selectedEdges) {
+      e.translateMiddlePoint(dx, dy);
     }
   }
 }
@@ -1002,25 +1053,73 @@ function makeEdgeOutOfList(L) {
 
 }
 
+function zoomFromToPoint(xs, ys, xp, yp, s) {
+  angleMode(RADIANS);
+  let rho = dist(xs, ys, xp, yp);
+  let newRho = s * rho;
+
+  let xM = (xp - xs);
+  if (xp == xs) {
+    xM = 0.000001;
+  }
+  let yM = (yp - ys);
+  let angle = atan2(yM, xM);
+
+  let xM2 = newRho * cos(angle);
+  let yM2 = newRho * sin(angle);
+
+  return [xM2 + xs, yM2 + ys];
+}
+
+
+function applyTransformation(theta, s, vC, vTX, vTY) {
+  angleMode(RADIANS);
+  vTX = (vTX - vC.x) * s * cos(theta) + (vTY - vC.y) * s * sin(theta) + vC.x;
+  vTY = (vTY - vC.y) * s * cos(theta) - (vTX - vC.x) * s * sin(theta) + vC.y;
+
+
+  // (e.oY - yAv) * sin(r) + (e.oX - xAv) * cos(r) + xAv, (e.oY - yAv) * cos(r) - (e.oX - xAv) * sin(r) + yAv
+  return [vTX, vTY];
+
+}
+
+function getTheta(vC, vS, vE) {
+  angleMode(RADIANS);
+  let angle1 = atan2(vS.y - vC.y, vS.x - vC.x);
+  let angle2 = atan2(vE.y - vC.y, vE.x - vC.x);
+
+  print(angle1, angle2);
+  return angle2 - angle1;
+}
+
+
+function getRho(vC, vS, vE) {
+  let d1 = dist(vC.x, vC.y, vS.x, vS.y);
+  let d2 = dist(vC.x, vC.y, vE.x, vE.y);
+
+  return d1 / d2;
+}
+
+
 
 
 
 function zoomFrom(x, y, s) {
   for (let v of Vertices) {
-    angleMode(RADIANS);
-    let rho = dist(x, y, v.x, v.y);
-    let newRho = s * rho;
-
-    let xM = (v.x - x);
-    if (v.x == x) {
-      xM = 0.000001;
-    }
-    let yM = (v.y - y);
-    let angle = atan2(yM, xM);
-
-    let xM2 = newRho * cos(angle);
-    let yM2 = newRho * sin(angle);
-    v.move(xM2 + x, yM2 + y);
+    let newCoordinates = zoomFromToPoint(x, y, v.x, v.y, s);
+    v.move(newCoordinates[0], newCoordinates[1]);
   }
+
+  for (let e of Edges) {
+    let newCoordinates = zoomFromToPoint(x, y, e.oX, e.oY, s);
+    e.moveMiddlePoint(newCoordinates[0], newCoordinates[1]);
+  }
+
+  // let newGridReferenceCoordinates = zoomFromToPoint(x, y, grid.referencePointX, grid.referencePointY, s);
+  //
+  // grid.referencePointX = newGridReferenceCoordinates[0];
+  // grid.referencePointY = newGridReferenceCoordinates[1];
+  //
+  // grid.gap *= s;
 
 }

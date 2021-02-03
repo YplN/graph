@@ -99,6 +99,8 @@ function mousePressed() {
                     isDraggingVertex = true;
                     mouseStartDraggingX = mouseX;
                     mouseStartDraggingY = mouseY;
+                    mouseStartDraggingFromBeginingX = mouseX;
+                    mouseStartDraggingFromBeginingY = mouseY;
                     if (!selectedVertices.includes(v)) {
                       selectedVertices = [v];
                       selectedEdges = [];
@@ -130,25 +132,32 @@ function mousePressed() {
               }
             } else // the user didn't click on a vertex
             {
-              if (mouseButton == LEFT) {
-                if (grid.isMagnetic) {
-                  addNewVertex(grid.closestLine(mouseX), grid.closestLine(mouseY));
-                  lmouseX = grid.closestLine(mouseX);
-                  lmouseY = grid.closestLine(mouseY);
-                } else {
-                  addNewVertex(mouseX, mouseY);
-                  lmouseX = mouseX;
-                  lmouseY = mouseY;
-                }
-                isCreatingEdge = true;
+              let e = EdgeMiddlePointPicked(mouseX, mouseY);
 
-
+              if (e) {
+                isDraggingMiddlePoint = true;
+                ledge = e;
               } else {
-                selectedVertices = [];
-                selectedEdges = [];
-                isSelectioning = true;
-                startSelectionX = mouseX;
-                startSelectionY = mouseY;
+                if (mouseButton == LEFT) {
+                  if (grid.isMagnetic) {
+                    addNewVertex(grid.closestLine(mouseX), grid.closestLine(mouseY));
+                    lmouseX = grid.closestLine(mouseX);
+                    lmouseY = grid.closestLine(mouseY);
+                  } else {
+                    addNewVertex(mouseX, mouseY);
+                    lmouseX = mouseX;
+                    lmouseY = mouseY;
+                  }
+                  isCreatingEdge = true;
+
+
+                } else {
+                  selectedVertices = [];
+                  selectedEdges = [];
+                  isSelectioning = true;
+                  startSelectionX = mouseX;
+                  startSelectionY = mouseY;
+                }
               }
             }
           }
@@ -161,8 +170,43 @@ function mousePressed() {
 
 function mouseDragged() {
   if (isDraggingVertex) {
+
+    console.log("coucou2");
     for (let v of selectedVertices) {
       v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+
+      for (let e of v.incidentEdges()) {
+        let v1 = e.v1;
+        let v2 = e.v2;
+
+        if (selectedVertices.includes(v1) && selectedVertices.includes(v2)) {
+          e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+        } else if (selectedVertices.includes(v1)) {
+          console.log("2");
+          e.transformMiddlePoint(v2, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+        } else {
+          console.log("1");
+          e.transformMiddlePoint(v1, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+        }
+      }
+    }
+
+
+    for (let e of selectedEdges) {
+      //e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+      // let v1 = e.v1;
+      // let v2 = e.v2;
+      //
+      // if (selectedVertices.includes(v1) && selectedVertices.includes(v2)) {
+      //   e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+      // } else if (selectedVertices.includes(v1)) {
+      //   console.log("2");
+      //   e.transformMiddlePoint(v2, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+      // } else {
+      //   console.log("1");
+      //   e.transformMiddlePoint(v1, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+      // }
+
     }
     mouseStartDraggingX = mouseX;
     mouseStartDraggingY = mouseY;
@@ -212,8 +256,16 @@ function mouseDragged() {
     for (let v of Vertices) {
       v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
     }
+
+    for (let e of Edges) {
+      e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+
+    }
+
     mouseStartDraggingX = mouseX;
     mouseStartDraggingY = mouseY;
+  } else if (isDraggingMiddlePoint) {
+    ledge.updateMiddlePoint(mouseX, mouseY);
   }
 
 }
@@ -279,6 +331,8 @@ function mouseReleased() {
   snapAnimation = 0;
   snapAnimationAlpha = 0;
   isTranslating = false;
+  isDraggingMiddlePoint = false;
+  ledge = false;
 
   // noLoop();
   // oneFrameMoreToDo = false;
@@ -370,13 +424,15 @@ function mouseWheel(event) {
     if (event.delta > 0) {
 
       if (keyIsDown(16)) {
-        rotateVertices(selectedVertices, PI / 10);
+        rotateVertices(selectedVertices, PI / 8);
+        rotateMiddlePoint(selectedEdges, selectedVertices, PI / 8);
       } else {
         zoomFrom(mouseX, mouseY, 1 / 1.1);
       }
     } else {
       if (keyIsDown(16)) {
-        rotateVertices(selectedVertices, -PI / 10);
+        rotateVertices(selectedVertices, -PI / 8);
+        rotateMiddlePoint(selectedEdges, selectedVertices, -PI / 8);
       } else {
         zoomFrom(mouseX, mouseY, 1.1);
       }

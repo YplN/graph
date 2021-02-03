@@ -14,6 +14,11 @@ class Edge {
     this.color = DEFAULT_COLOR;
     this.oriented = o;
     this.size = 1;
+
+    this.oX = (v2.x + v1.x) / 2;
+    this.oY = (v2.y + v1.y) / 2;
+    // this.v1arc
+
   }
 
   kill() {
@@ -32,15 +37,30 @@ class Edge {
     if (modern) {
       strokeWeight(EDGE_DEFAULT_STROKE * this.size * 2 + 10);
       stroke(BACKGROUND_COLOR);
-      line(this.v1.x, this.v1.y, this.v2.x, this.v2.y);
+      // line(this.v1.x, this.v1.y, this.v2.x, this.v2.y);
+      noFill();
+      bezier(this.v1.x, this.v1.y, this.oX, this.oY, this.oX, this.oY, this.v2.x, this.v2.y);
+
     }
     if (selectedEdges.includes(this)) {
       stroke(FOCUSED_VERTEX_COLOR);
       strokeWeight(EDGE_DEFAULT_STROKE * this.size * 2);
-      line(this.v1.x, this.v1.y, this.v2.x, this.v2.y);
+      noFill();
+      bezier(this.v1.x, this.v1.y, this.oX, this.oY, this.oX, this.oY, this.v2.x, this.v2.y);
+      // line(this.v1.x, this.v1.y, this.v2.x, this.v2.y);
       if (this.oriented) {
+        angleMode(RADIANS);
         push() //start new drawing state
-        let angle = atan2(this.v1.y - this.v2.y, this.v1.x - this.v2.x); //gets the angle of the line
+
+        let x = this.oX;
+        let y = this.oY;
+
+        if (dist(this.oX, this.oY, this.v2.x, this.v2.y) < VERTEX_DEFAULT_SIZE * this.size / 2) { // if the bezier point is too close, we pick the v1 instead
+          x = this.v1.x;
+          y = this.v1.y;
+        }
+
+        let angle = atan2(y - this.v2.y, x - this.v2.x); //gets the angle of the line
         translate(this.v2.x, this.v2.y); //translates to the destination vertex
         rotate(angle - HALF_PI); //rotates the arrow point
         let offset = VERTEX_DEFAULT_SIZE * 0.75 * this.size;
@@ -53,12 +73,26 @@ class Edge {
     stroke(this.color);
     strokeWeight(EDGE_DEFAULT_STROKE * this.size);
 
-    line(this.v1.x, this.v1.y, this.v2.x, this.v2.y);
+    noFill();
+    bezier(this.v1.x, this.v1.y, this.oX, this.oY, this.oX, this.oY, this.v2.x, this.v2.y);
+    // line(this.v1.x, this.v1.y, this.v2.x, this.v2.y);
+
+
+
     if (this.oriented) {
       //https://stackoverflow.com/questions/44874243/drawing-arrows-in-p5js
       push() //start new drawing state
       angleMode(RADIANS);
-      let angle = atan2(this.v1.y - this.v2.y, this.v1.x - this.v2.x); //gets the angle of the line
+      // let angle = atan2(this.v1.y - this.v2.y, this.v1.x - this.v2.x); //gets the angle of the line
+      let x = this.oX;
+      let y = this.oY;
+
+      if (dist(this.oX, this.oY, this.v2.x, this.v2.y) < VERTEX_DEFAULT_SIZE * this.size / 2) { // if the bezier point is too close, we pick the v1 instead
+        x = this.v1.x;
+        y = this.v1.y;
+      }
+
+      let angle = atan2(y - this.v2.y, x - this.v2.x); //gets the angle of the line
       translate(this.v2.x, this.v2.y); //translates to the destination vertex
       rotate(angle - HALF_PI); //rotates the arrow point
       let offset = VERTEX_DEFAULT_SIZE * 0.75 * this.size;
@@ -67,6 +101,62 @@ class Edge {
       triangle(-offset * 0.5, offset + adjust, offset * 0.5, offset + adjust, 0, -offset / 2 + adjust); //draws the arrow point as a triangle
       pop();
     }
+
+    fill(FOCUSED_VERTEX_COLOR);
+    if (isDraggingMiddlePoint && this == ledge) {
+      strokeWeight(1);
+      stroke(200, 100);
+      line(this.v1.x, this.v1.y, this.oX, this.oY);
+      line(this.v2.x, this.v2.y, this.oX, this.oY);
+    }
+    circle(this.oX, this.oY, 9);
+
+  }
+
+  translateMiddlePoint(x, y) {
+    this.oX += x;
+    this.oY += y;
+
+
+  }
+
+  transformMiddlePoint(vC, xS, yS, xE, yE) {
+    let vS = {
+      x: xS,
+      y: yS
+    };
+    let vE = {
+      x: xE,
+      y: yE
+    };
+
+    let theta = getTheta(vC, vS, vE);
+    let rho = getRho(vC, vS, vE);
+
+    let newCoordinates = applyTransformation(theta, rho, vC, this.oX, this.oY);
+
+    this.oX = newCoordinates[0];
+    this.oY = newCoordinates[1];
+
+    console.log("coucou");
+
+  }
+
+
+
+  moveMiddlePoint(x, y) {
+    this.oX = x;
+    this.oY = y;
+  }
+
+
+  isOnMiddlePoint(x, y) {
+    return (dist(x, y, this.oX, this.oY) < VERTEX_SNAP_SIZE);
+  }
+
+  updateMiddlePoint(x, y) {
+    this.oX = x;
+    this.oY = y;
   }
 
   tellVertices() {
@@ -100,7 +190,8 @@ class Edge {
 
   tikzifyEdge() {
     // TODO: ORIENTED CASE
-    return "\\draw[line width = " + this.size + "] " + "(v" + Vertices.indexOf(this.v1) + ") -- (v" + Vertices.indexOf(this.v2) + ");";
+    return "\\draw[line width = " + this.size + "] " + "(v" + Vertices.indexOf(this.v1) + ") .. controls (" + this.oX / 100 + "," + this.oY / 100 + ") .. (v" + Vertices.indexOf(this.v2) + ");";
+    // return "\\draw[line width = " + this.size + "] " + "(v" + Vertices.indexOf(this.v1) + ") -- (v" + Vertices.indexOf(this.v2) + ");";
   }
 
 
