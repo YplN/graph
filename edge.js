@@ -17,8 +17,14 @@ class Edge {
 
     this.oX = (v2.x + v1.x) / 2;
     this.oY = (v2.y + v1.y) / 2;
+
+    this.label = new Label(nf(random(50), 2, 0), this.getmiddlePointX(), this.getmiddlePointY());
     // this.v1arc
 
+  }
+
+  updateLabelPosition() {
+    this.label.move(this.getmiddlePointX(), this.getmiddlePointY());
   }
 
   kill() {
@@ -106,18 +112,34 @@ class Edge {
     if (isDraggingMiddlePoint && this == ledge) {
       strokeWeight(1);
       stroke(200, 100);
-      line(this.v1.x, this.v1.y, this.oX, this.oY);
-      line(this.v2.x, this.v2.y, this.oX, this.oY);
-    }
-    circle(this.oX, this.oY, 9);
 
+      if (showBendings) {
+        line(this.v1.x, this.v1.y, this.oX, this.oY);
+        line(this.v2.x, this.v2.y, this.oX, this.oY);
+      }
+    }
+
+    if (showBendings) {
+      circle(this.oX, this.oY, 9);
+
+    }
+
+    this.label.show();
   }
 
   translateMiddlePoint(x, y) {
     this.oX += x;
     this.oY += y;
 
+    this.updateLabelPosition();
+  }
 
+
+  getmiddlePointX() {
+    return bezierPoint(this.v1.x, this.oX, this.oX, this.v2.x, 0.5);
+  }
+  getmiddlePointY() {
+    return bezierPoint(this.v1.y, this.oY, this.oY, this.v2.y, 0.5);
   }
 
   transformMiddlePoint(vC, xS, yS, xE, yE) {
@@ -133,12 +155,11 @@ class Edge {
     let theta = getTheta(vC, vS, vE);
     let rho = getRho(vC, vS, vE);
 
-    let newCoordinates = applyTransformation(theta, rho, vC, this.oX, this.oY);
+    // console.log(this.oX.initialDraggingX, this.oY.initialDraggingY);
+    let newCoordinates = applyTransformation(theta, rho, vC, this.initialDraggingX, this.initialDraggingY);
 
-    this.oX = newCoordinates[0];
-    this.oY = newCoordinates[1];
 
-    console.log("coucou");
+    this.moveMiddlePoint(newCoordinates[0], newCoordinates[1]);
 
   }
 
@@ -147,6 +168,8 @@ class Edge {
   moveMiddlePoint(x, y) {
     this.oX = x;
     this.oY = y;
+
+    this.updateLabelPosition();
   }
 
 
@@ -154,10 +177,12 @@ class Edge {
     return (dist(x, y, this.oX, this.oY) < VERTEX_SNAP_SIZE);
   }
 
-  updateMiddlePoint(x, y) {
-    this.oX = x;
-    this.oY = y;
-  }
+  // updateMiddlePoint(x, y) {
+  //   this.oX = x;
+  //   this.oY = y;
+  //
+  //   this.label.move(x, y);
+  // }
 
   tellVertices() {
     this.v1.addEdge(this);
@@ -190,7 +215,8 @@ class Edge {
 
   tikzifyEdge() {
     // TODO: ORIENTED CASE
-    return "\\draw[line width = " + this.size + "] " + "(v" + Vertices.indexOf(this.v1) + ") .. controls (" + this.oX / 100 + "," + this.oY / 100 + ") .. (v" + Vertices.indexOf(this.v2) + ");";
+    return "\\draw[line width = " + this.size + ", color = c" + COLORS.indexOf(this.color) +
+      "] " + "(v" + Vertices.indexOf(this.v1) + ") .. controls (" + this.oX / 100 + "," + this.oY / 100 + ") .. (v" + Vertices.indexOf(this.v2) + ");";
     // return "\\draw[line width = " + this.size + "] " + "(v" + Vertices.indexOf(this.v1) + ") -- (v" + Vertices.indexOf(this.v2) + ");";
   }
 

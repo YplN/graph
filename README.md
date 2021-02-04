@@ -16,6 +16,7 @@
 -   Shift + Mouse-wheel : rotate the selected vertices (the centre of rotation is its centroid)
 -   Key 'o' : switch to oriented graphs (needs debug)
 -   Key 'g' : toggle the magnetic grid
+-   Key 'b' : toggle the bending mode
 -   Key 'm' : toggle the menu
 -   Key Delete or Backspace : delete selection
 -   Key Ctrl + 'C' : copy selection, Left-click to paste
@@ -24,18 +25,28 @@
 -   Key Alt + 's' : Shuffle the graph. Because why not?
 -   Share graph codes ! : Click on "Share or Import Graph". If you want to share your beautiful graph, just copy the code shown and give it to the ones you love. To use a code, paste it in the same window (be sure you remove everything before.)
 
+### New !
+
+Bending arcs ! Press 'b' to toggle bending modes. It creates a new point for each edge that allows you to bend them.
+
 ### TODO
 
--   improve LaTeX : colors...
+#### Improve :
+
+-   improve LaTeX : oriented...
+-   improve bending edge selection
+-   Labels : move, size
+-   copy/paste subgraph (do some additional tests...) + bending edges
+-   share/load : dealing with bending arcs
+
+#### To add :
+
 -   merging vertices
 -   snap vertex to an edge
--   curving edges!
 -   select edge by right-click
--   copy/paste subgraph (do some additional tests...)
 -   undo
 -   loop/noLoop
 -   improve animations
 -   switch grid on/off
 -   grid gap value slider
 -   shortcuts helper
--   give labels to vertices

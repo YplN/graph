@@ -108,6 +108,17 @@ function mousePressed() {
                       //   selectedVertices = [v];
                       // }
                     }
+
+
+                    for (let v of selectedVertices) {
+                      v.initialDraggingX = v.x;
+                      v.initialDraggingY = v.y;
+                    }
+
+                    for (let e of Edges) {
+                      e.initialDraggingX = e.oX;
+                      e.initialDraggingY = e.oY;
+                    }
                   }
 
                   //  else {
@@ -171,22 +182,40 @@ function mousePressed() {
 function mouseDragged() {
   if (isDraggingVertex) {
 
-    console.log("coucou2");
+    // console.log("coucou2");
+    let edgesDone = []; // to prevent a translation of middle point to be done twice
     for (let v of selectedVertices) {
       v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
 
       for (let e of v.incidentEdges()) {
-        let v1 = e.v1;
-        let v2 = e.v2;
+        if (!edgesDone.includes(e)) {
+          let v1 = e.v1;
+          let v2 = e.v2;
 
-        if (selectedVertices.includes(v1) && selectedVertices.includes(v2)) {
-          e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
-        } else if (selectedVertices.includes(v1)) {
-          console.log("2");
-          e.transformMiddlePoint(v2, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+          let i1 = selectedVertices.includes(v1);
+          let i2 = selectedVertices.includes(v2);
+
+          if (i1 > 0 && i2 > 0) {
+            e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+            // console.log(e.label.text + " translate");
+          } else if (i1 > 0) {
+            // console.log(e.label.text + " rotate");
+            e.transformMiddlePoint(v2, v1.x, v1.y, v1.initialDraggingX, v1.initialDraggingY);
+            // e.transformMiddlePoint(v2, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY);
+          } else {
+            // console.log(e.label.text + " rotate");
+            // e.transformMiddlePoint(v1, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY);
+            // e.transformMiddlePoint(v1, v2.initialDraggingX, v2.initialDraggingY, v2.x, v2.y);
+
+            e.transformMiddlePoint(v1, v2.x, v2.y, v2.initialDraggingX, v2.initialDraggingY);
+
+          }
+          edgesDone.push(e);
+
+          // console.log(e.label.text + " done");
         } else {
-          console.log("1");
-          e.transformMiddlePoint(v1, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+
+          // console.log(e.label.text + " nope");
         }
       }
     }
@@ -265,7 +294,7 @@ function mouseDragged() {
     mouseStartDraggingX = mouseX;
     mouseStartDraggingY = mouseY;
   } else if (isDraggingMiddlePoint) {
-    ledge.updateMiddlePoint(mouseX, mouseY);
+    ledge.moveMiddlePoint(mouseX, mouseY);
   }
 
 }
@@ -377,6 +406,10 @@ function keyPressed() {
       oriented = !oriented;
     }
 
+    if (key == 'b' || key == 'B') {
+      showBendings = !showBendings;
+    }
+
     if (key == 'c' || key == 'C') {
       if (keyIsDown(17) && !isLatexCodeShowing && !isGraphCodeShowing) {
         copySelection();
@@ -386,11 +419,14 @@ function keyPressed() {
 
     }
 
-    if (key == 'g') {
+    if (key == 'g' || key == 'G') {
       grid.isMagnetic = !grid.isMagnetic;
     }
+    if (key == 'l' || key == 'L') {
+      showLabels = !showLabels;
+    }
 
-    if (key == 's') {
+    if (key == 's' || key == 'S') {
       if (keyIsDown(18)) // Alt
         shuffleGraph();
     }

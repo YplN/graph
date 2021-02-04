@@ -1,6 +1,5 @@
 let Vertices = [];
 let Edges = [];
-let data = new Data();
 
 
 let BACKGROUND_COLOR;
@@ -90,6 +89,8 @@ let grid;
 
 let oneFrameMoreToDo = true;
 
+let showLabels = false;
+let showBendings = false;
 
 // function to disable default menu on right click
 // https://discourse.processing.org/t/using-right-mouse-without-context-menu/9379/3
@@ -148,7 +149,7 @@ function setup() {
   shareButton = new Button(10, 10, "Share or Load", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
   latexButton = new Button(20 + shareButton.width, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
 
-  grid = new Grid(50, DEFAULT_COLOR, true);
+  grid = new Grid(50, DEFAULT_COLOR, false);
 
 
   // createGraph("?V=[[950,700,1,10],[700,400,1,10],[750,250,1,10],[850,200,1,10],[950,300,1,10],[1050,200,1,10],[1150,250,1,10],[1200,400,1,10]]&E=[[0,1,1,0,11],[1,2,1,0,11],[2,3,1,0,11],[3,4,1,0,11],[4,5,1,0,11],[5,6,1,0,11],[6,7,1,0,11],[7,0,1,0,11]]");
@@ -476,7 +477,6 @@ function colorPicked(x, y) {
     for (var i = 0; i < 4; i++) {
       for (var j = 0; j < 3; j++) {
         if (abs(x - colorPositionX(i, j) - (width - lateralBarOffsetX)) < COLOR_WIDTH / 2 && (abs(y - colorPositionY(i, j)) < COLOR_HEIGHT / 2)) {
-          console.log(i, j);
           return COLORS[i * 3 + j];
         }
       }
@@ -593,72 +593,106 @@ function updateSelectMode() {
   }
 }
 
-function selectEdgesFromBox(x1, y1, x2, y2) {
-  let minX = min(x1, x2);
-  let minY = min(y1, y2);
 
-  let maxX = max(x1, x2);
-  let maxY = max(y1, y2);
+function solutionQuadratic(a, b, c) {
 
-  let w = maxX - minX;
-  let h = maxY - minY;
+  if (b == 0 && a == 0) {
+    return [];
+  }
+
+  if (a == 0) {
+    return [-c / b];
+  }
+
+  let delta = b * b - 4 * a * c;
+  if (delta > 0) {
+    return [(-b + sqrt(delta)) / (2 * a), (-b - sqrt(delta)) / (2 * a)];
+  }
+  if (delta == 0) {
+    return [-b / (2 * a)];
+  }
+  return [];
+}
+
+
+function bezierValue(t, p0, p1, p2) {
+  // return (1.0 - t) * (1.0 - t) * p0 + 2.0 * (1.0 - t) * t * p1 + t * t * p2;
+  return bezierPoint(p0, p1, p1, p2, t);
+}
+
+
+
+
+
+function selectEdgesFromBox(xA, yA, xB, yB) {
+  let minX = min(xA, xB);
+  let minY = min(yA, yB);
+
+  let maxX = max(xA, xB);
+  let maxY = max(yA, yB);
 
   let sel = [];
 
 
   for (let e of Edges) {
-    let x1 = e.v1.x;
-    let y1 = e.v1.y;
+
+    let x0 = e.v1.x;
+    let y0 = e.v1.y;
+    let x1 = e.oX;
+    let y1 = e.oY;
     let x2 = e.v2.x;
     let y2 = e.v2.y;
 
 
-    let dy = y2 - y1;
-    if (y2 == y1) // just in case of infinite slope
-    {
-      dy = 0.000001;
-    }
-
-    let dx = x2 - x1;
-    if (x2 == x1) // just in case of infinite slope
-    {
-      dx = 0.000001;
-    }
-
-    let m = dy / dx;
-    let p = y1 - m * x1;
-
-    // x coordinate of the intersection between the (infinite) line
-    // going from the extremities of the edges and the rectangle
-    let xiBottom = (maxY - p) / m;
-    // y coordinate on the line when the x coordinate is xiBottom
-    let yiBottom = m * xiBottom + p;
-    // so the edge intersect the bottom side of the rectangle if :
-    // the infinite line cut at some point the rectangle
-    // (minX <= xiBottom && xiBottom <= maxX && min(y1, y2)
-    // where the y-coordinate of the rectangle at xiBottom
-    // is ON the edge
-    // (min(y1, y2) <= yiBottom && yiBottom <= max(y1, y2))
-
-
-    // we do the same for the other sides of the rectangle
-    let xiTop = (minY - p) / m;
-    let yiTop = m * xiTop + p;
-
-    let yiLeft = m * minX + p;
-    let xiLeft = (yiLeft - p) / m;
-
-    let yiRight = m * maxX + p;
-    let xiRight = (yiRight - p) / m;
-
-    // we also have to add the case where the edge is totally INSIDE the rectangle
-
-    if ((minX <= xiBottom && xiBottom <= maxX && min(y1, y2) <= yiBottom && yiBottom <= max(y1, y2)) ||
-      (minX <= xiTop && xiTop <= maxX && min(y1, y2) <= yiTop && yiTop <= max(y1, y2)) ||
-      (minY <= yiLeft && yiLeft <= maxY && min(x1, x2) <= xiLeft && xiLeft <= max(x1, x2)) ||
-      (minY <= yiRight && yiRight <= maxY && min(x1, x2) <= xiRight && xiRight <= max(x1, x2)) ||
-      (minX <= min(x1, x2) && max(x1, x2) <= maxX && minY <= min(y1, y2) && max(y1, y2) <= maxY)) {
+    // case where both vertices are already on the box
+    if ((minX <= min(x0, x2) && max(x0, x2) <= maxX && minY <= min(y0, y2) && max(y0, y2) <= maxY)) {
       sel.push(e);
+    } else {
+      // we get the quadratic equation of the intersection of the bended edge and the sides of the box
+      // https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+
+      let aX = (x2 + x0 - 2 * x1);
+      let bX = 2 * (x1 - x0);
+      let cXmin = x0 - minX;
+      let cXmax = x0 - maxX;
+
+      let aY = (y2 + y0 - 2 * y1);
+      let bY = 2 * (y1 - y0);
+      let cYmin = y0 - minY;
+      let cYmax = y0 - maxY;
+
+      // the candidates for the intersections
+      let tXmin = solutionQuadratic(aX, bX, cXmin);
+      let tXmax = solutionQuadratic(aX, bX, cXmax);
+      let tYmin = solutionQuadratic(aY, bY, cYmin);
+      let tYmax = solutionQuadratic(aY, bY, cYmax);
+
+      let intersect = false;
+
+      for (let t of tXmax.concat(tXmin)) { // we look for the candidates that are touching vertical sides
+        if (t >= 0 && t <= 1) {
+          let y = bezierValue(t, y0, y1, y2);
+          if ((minY <= y && y <= maxY)) { // the candidate touches the box
+            intersect = true;
+            sel.push(e);
+            break;
+          }
+        }
+      }
+
+      if (!intersect) {
+
+        for (let t of tYmax.concat(tYmin)) {
+          if (t >= 0 && t <= 1) {
+            let x = bezierValue(t, x0, x1, x2);
+            if ((minX <= x && x <= maxX)) {
+              intersect = true;
+              sel.push(e);
+              break;
+            }
+          }
+        }
+      }
     }
   }
   return sel;
@@ -710,6 +744,13 @@ function centerVertices() {
     minY = min(minY, v.y);
     maxX = max(maxX, v.x);
     maxY = max(maxY, v.y);
+  }
+
+  for (let e of Edges) {
+    minX = min(minX, e.oX);
+    minY = min(minY, e.oY);
+    maxX = max(maxX, e.oX);
+    maxY = max(maxY, e.oY);
   }
 
   let vWidth = maxX - minX;
@@ -862,7 +903,7 @@ function copySelection() {
 
 function createLateX() {
   let latex = header();
-  // defineColorsUsed();
+  latex += defineColors();
   latex += "\\begin{document}\n	\\begin{tikzpicture}[yscale=-1]\n";
   latex += createCoordinates() + "\n";
   latex += createEdges() + "\n";
@@ -1018,8 +1059,6 @@ function createGraph(code) {
   for (let e of E) {
     makeEdgeOutOfList(e);
   }
-  // console.log("EDGES " + E, "\n VERTICES " + V);
-  // console.log(JSON.parse(V));
 }
 
 
@@ -1074,12 +1113,12 @@ function zoomFromToPoint(xs, ys, xp, yp, s) {
 
 function applyTransformation(theta, s, vC, vTX, vTY) {
   angleMode(RADIANS);
-  vTX = (vTX - vC.x) * s * cos(theta) + (vTY - vC.y) * s * sin(theta) + vC.x;
-  vTY = (vTY - vC.y) * s * cos(theta) - (vTX - vC.x) * s * sin(theta) + vC.y;
+  let newvTX = (vTX - vC.x) * s * cos(theta) + (vTY - vC.y) * s * sin(theta) + vC.x;
+  let newvTY = (vTY - vC.y) * s * cos(theta) - (vTX - vC.x) * s * sin(theta) + vC.y;
 
 
-  // (e.oY - yAv) * sin(r) + (e.oX - xAv) * cos(r) + xAv, (e.oY - yAv) * cos(r) - (e.oX - xAv) * sin(r) + yAv
-  return [vTX, vTY];
+
+  return [newvTX, newvTY];
 
 }
 
@@ -1088,7 +1127,7 @@ function getTheta(vC, vS, vE) {
   let angle1 = atan2(vS.y - vC.y, vS.x - vC.x);
   let angle2 = atan2(vE.y - vC.y, vE.x - vC.x);
 
-  print(angle1, angle2);
+  // console.log(180 * (angle2 - angle1) / PI);
   return angle2 - angle1;
 }
 
@@ -1097,6 +1136,7 @@ function getRho(vC, vS, vE) {
   let d1 = dist(vC.x, vC.y, vS.x, vS.y);
   let d2 = dist(vC.x, vC.y, vE.x, vE.y);
 
+  // console.log(d1 / d2 * 100 + "%");
   return d1 / d2;
 }
 

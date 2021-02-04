@@ -1,16 +1,24 @@
 class Vertex {
-  constructor(x, y, size) {
+  constructor(x, y, size, s) {
     this.x = round(x * 100) / 100;
     this.y = round(y * 100) / 100;
     this.size = size;
     // this.edges = [];
     this.color = BACKGROUND_COLOR;
+
+    // if (s) {
+    this.label = new Label(nf(random(1, 10), 1, 0), x, y);
+    // }
   }
 
   move(x, y) {
     this.x = round(x * 100) / 100;
     this.y = round(y * 100) / 100;
+
+    this.label.move(x, y);
   }
+
+
 
   setColor(c) {
     this.color = c;
@@ -49,6 +57,9 @@ class Vertex {
     strokeWeight(2);
     fill(this.color);
     circle(this.x, this.y, VERTEX_DEFAULT_SIZE * this.size);
+
+
+    this.label.show();
   }
 
   isOn(x, y) {
@@ -56,8 +67,10 @@ class Vertex {
   }
 
   translate(x, y) {
-    this.x += round(x * 100) / 100;;
-    this.y += round(y * 100) / 100;;
+    this.x += round(x * 100) / 100;
+    this.y += round(y * 100) / 100;
+
+    this.label.translate(x, y);
   }
 
   addEdge(e) {
@@ -188,7 +201,16 @@ class Vertex {
 
 
   tikzifyNode() {
-    return "\\node[scale = " + this.size / 2 + ", nodes={white}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};"
+    let c = "c" + COLORS.indexOf(this.color);
+
+    // https://tex.stackexchange.com/questions/58878/tikz-set-node-label-position-more-precisely
+    // shift={(1,0.3}} COMMENT 2
+    // label={[shift={(1.0,0.5)}]Label}
+
+    if (this.color == DEFAULT_COLOR) {
+      c = "white";
+    }
+    return "\\node[scale = " + this.size / 2 + ", nodes={" + c + "}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};"
   }
 
 

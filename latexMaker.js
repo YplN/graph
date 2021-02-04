@@ -1,19 +1,44 @@
-function defineColorsUsed() {
-  let colors = []
-  for (let v of Vertices) {
-    if (COLORS.includes(v.color) && !colors.includes(v.color)) {
-      colors.push(v.color);
-    }
+function defineColors() {
+  // let colors = []
+  // for (let v of Vertices) {
+  //   if (COLORS.includes(v.color) && !colors.includes(v.color)) {
+  //     colors.push(v.color);
+  //   }
+  // }
+  //
+  // for (let e of Edges) {
+  //   if (COLORS.includes(e.color) && !colors.includes(e.color)) {
+  //     colors.push(e.color);
+  //   }
+  // }
+
+  let colors = "";
+  for (var i = 0; i < COLORS.length; i++) {
+    colors += createColor(COLORS[i]) + "\n";
+  }
+  return colors + "\n";
+}
+
+
+
+function createColor(c) {
+  let r = nf(red(c) / 255, 1, 2);
+  let g = nf(green(c) / 255, 1, 2);
+  let b = nf(blue(c) / 255, 1, 2);
+
+  if (c == DEFAULT_COLOR) {
+    r = 0;
+    g = 0;
+    b = 0;
   }
 
-  for (let e of Edges) {
-    if (COLORS.includes(e.color) && !colors.includes(e.color)) {
-      colors.push(e.color);
-    }
+  if (c == BACKGROUND_COLOR) {
+    r = 1;
+    g = 1;
+    b = 1;
   }
 
-
-
+  return "\\definecolor{c" + COLORS.indexOf(c) + "}{rgb}{" + r + "," + g + "," + b + "}";
 }
 
 
