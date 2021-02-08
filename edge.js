@@ -155,7 +155,6 @@ class Edge {
     let theta = getTheta(vC, vS, vE);
     let rho = getRho(vC, vS, vE);
 
-    // console.log(this.oX.initialDraggingX, this.oY.initialDraggingY);
     let newCoordinates = applyTransformation(theta, rho, vC, this.initialDraggingX, this.initialDraggingY);
 
 
@@ -163,12 +162,20 @@ class Edge {
 
   }
 
+  resetMiddlePoint() {
+    this.oX = (this.v2.x + this.v1.x) / 2;
+    this.oY = (this.v2.y + this.v1.y) / 2;
+  }
 
-
-  moveMiddlePoint(x, y) {
+  setMiddlePoint(x, y) {
     this.oX = x;
     this.oY = y;
 
+  }
+
+
+  moveMiddlePoint(x, y) {
+    this.setMiddlePoint(x, y);
     this.updateLabelPosition();
   }
 
@@ -225,7 +232,7 @@ class Edge {
     let o = 0;
     if (this.oriented)
       o = 1;
-    return "[" + Vertices.indexOf(this.v1) + "," + Vertices.indexOf(this.v2) + "," + this.size + "," + o + "," + COLORS.indexOf(this.color) + "]";
+    return "[" + Vertices.indexOf(this.v1) + "," + Vertices.indexOf(this.v2) + "," + this.size + "," + o + "," + COLORS.indexOf(this.color) + "," + this.oX + "," + this.oY + "]";
   }
 
 }

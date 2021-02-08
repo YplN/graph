@@ -182,7 +182,6 @@ function mousePressed() {
 function mouseDragged() {
   if (isDraggingVertex) {
 
-    // console.log("coucou2");
     let edgesDone = []; // to prevent a translation of middle point to be done twice
     for (let v of selectedVertices) {
       v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
@@ -197,25 +196,13 @@ function mouseDragged() {
 
           if (i1 > 0 && i2 > 0) {
             e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
-            // console.log(e.label.text + " translate");
           } else if (i1 > 0) {
-            // console.log(e.label.text + " rotate");
             e.transformMiddlePoint(v2, v1.x, v1.y, v1.initialDraggingX, v1.initialDraggingY);
-            // e.transformMiddlePoint(v2, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY);
           } else {
-            // console.log(e.label.text + " rotate");
-            // e.transformMiddlePoint(v1, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY);
-            // e.transformMiddlePoint(v1, v2.initialDraggingX, v2.initialDraggingY, v2.x, v2.y);
-
             e.transformMiddlePoint(v1, v2.x, v2.y, v2.initialDraggingX, v2.initialDraggingY);
 
           }
           edgesDone.push(e);
-
-          // console.log(e.label.text + " done");
-        } else {
-
-          // console.log(e.label.text + " nope");
         }
       }
     }
@@ -461,14 +448,14 @@ function mouseWheel(event) {
 
       if (keyIsDown(16)) {
         rotateVertices(selectedVertices, PI / 8);
-        rotateMiddlePoint(selectedEdges, selectedVertices, PI / 8);
+        // rotateMiddlePoint(selectedEdges, selectedVertices, PI / 8);
       } else {
         zoomFrom(mouseX, mouseY, 1 / 1.1);
       }
     } else {
       if (keyIsDown(16)) {
         rotateVertices(selectedVertices, -PI / 8);
-        rotateMiddlePoint(selectedEdges, selectedVertices, -PI / 8);
+        // rotateMiddlePoint(selectedEdges, selectedVertices, -PI / 8);
       } else {
         zoomFrom(mouseX, mouseY, 1.1);
       }

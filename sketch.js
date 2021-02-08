@@ -155,6 +155,8 @@ function setup() {
   // createGraph("?V=[[950,700,1,10],[700,400,1,10],[750,250,1,10],[850,200,1,10],[950,300,1,10],[1050,200,1,10],[1150,250,1,10],[1200,400,1,10]]&E=[[0,1,1,0,11],[1,2,1,0,11],[2,3,1,0,11],[3,4,1,0,11],[4,5,1,0,11],[5,6,1,0,11],[6,7,1,0,11],[7,0,1,0,11]]");
 
   // createGraph("?V=[[750,550,1,10],[850,350,0.73,0],[1000,500,0.73,0],[950,650,1,10],[700,650,1,10],[550,450,1,6],[700,300,1,10],[550,250,1,6],[400,550,1,6],[650,850,1,10],[900,750,0.5,3],[1150,850,0.5,3],[1200,500,1,10],[1050,250,0.73,0],[1600,350,1,10]]&E=[[0,1,0.73,0,0],[1,2,0.73,0,0],[2,3,0.73,0,0],[3,4,1,0,11],[4,5,1,0,6],[5,6,1,0,6],[6,0,1,0,11],[6,7,1,0,6],[7,8,1,0,6],[8,9,1,0,6],[9,10,0.5,0,3],[10,11,0.5,0,3],[11,12,0.5,0,3],[12,13,0.73,0,0],[13,1,0.73,0,0]]");
+
+  // createGraph("?V=[[422,591.5,1,10],[292,357.5,1,10],[558,197.5,1,10],[802,459.5,1,10],[1071,294.5,1,10],[1138,659.5,1,10],[577,728.5,1,10]]&E=[[0,1,1,0,11,252,534.5],[1,2,1,0,11,378,179.5],[2,3,1,0,11,555,416.5],[3,4,1,0,11,898,296.5],[4,5,1,0,11,1207,418.5],[5,6,1,0,11,851,544.5],[6,0,1,0,11,559,585.5]]");
 }
 
 
@@ -782,14 +784,48 @@ function rotateVertices(V, r) {
 
   angleMode(RADIANS);
   for (let v of V) {
+    v.initialDraggingX = v.x;
+    v.initialDraggingY = v.y;
     //https://stackoverflow.com/questions/20104611/find-new-coordinates-of-a-point-after-rotation
     v.move((v.y - yAv) * sin(r) + (v.x - xAv) * cos(r) + xAv, (v.y - yAv) * cos(r) - (v.x - xAv) * sin(r) + yAv);
+  }
+
+  for (let e of Edges) {
+    e.initialDraggingX = e.oX;
+    e.initialDraggingY = e.oY;
+  }
+
+
+  let edgesDone = []; // to prevent a translation of middle point to be done twice
+  for (let v of V) {
+    for (let e of v.incidentEdges()) {
+      if (!edgesDone.includes(e)) {
+        let v1 = e.v1;
+        let v2 = e.v2;
+
+        let i1 = V.includes(v1);
+        let i2 = V.includes(v2);
+
+        if (i1 > 0 && i2 > 0) {
+          // e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+          e.moveMiddlePoint((e.oY - yAv) * sin(r) + (e.oX - xAv) * cos(r) + xAv, (e.oY - yAv) * cos(r) - (e.oX - xAv) * sin(r) + yAv);
+        } else if (i1 > 0) {
+          e.transformMiddlePoint(v2, v1.x, v1.y, v1.initialDraggingX, v1.initialDraggingY);
+        } else {
+          e.transformMiddlePoint(v1, v2.x, v2.y, v2.initialDraggingX, v2.initialDraggingY);
+
+        }
+        edgesDone.push(e);
+      }
+    }
   }
 
 }
 
 
 function rotateMiddlePoint(E, V, r) {
+
+  angleMode(RADIANS);
   let xAv = 0;
   let yAv = 0;
 
@@ -801,7 +837,10 @@ function rotateMiddlePoint(E, V, r) {
   xAv = xAv / V.length;
   yAv = yAv / V.length;
 
-  angleMode(RADIANS);
+
+
+
+
   for (let e of E) {
     //https://stackoverflow.com/questions/20104611/find-new-coordinates-of-a-point-after-rotation
     e.moveMiddlePoint((e.oY - yAv) * sin(r) + (e.oX - xAv) * cos(r) + xAv, (e.oY - yAv) * cos(r) - (e.oX - xAv) * sin(r) + yAv);
@@ -987,6 +1026,10 @@ function shuffleGraph() // Because why not?
     v.move(x, y);
   }
 
+  for (let e of Edges) {
+    e.resetMiddlePoint();
+  }
+
   centerVertices();
 }
 
@@ -1084,10 +1127,13 @@ function makeEdgeOutOfList(L) {
     oriented = false;
   }
   let color = COLORS[L[4]];
+  let middlePointX = L[5];
+  let middlePointY = L[6];
 
   let e = new Edge(Vertices[indexV1], Vertices[indexV2], oriented);
   e.setColor(color);
   e.setSize(size);
+  e.moveMiddlePoint(middlePointX, middlePointY);
   Edges.push(e);
 
 }
