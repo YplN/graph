@@ -199,23 +199,34 @@ class Vertex {
     return "\\coordinate (v" + Vertices.indexOf(this) + ") at ( " + round(this.x * 100) / 10000 + ", " + round(this.y * 100) / 10000 + " );"
   }
 
+  tikzifyLabel() {
+    let labelCode = "";
+    if (showLabels) {
+
+      // https://tex.stackexchange.com/questions/58878/tikz-set-node-label-position-more-precisely
+      // shift={(1,0.3)} COMMENT 2
+      labelCode = "\\node[shift={(" + round(this.label.getExactLabelOffsetX() * 10) / 1000 + "," + -round(this.label.getExactLabelOffsetY() * 10) / 1000 + ")}, scale=0.65] at  (v" + Vertices.indexOf(this) + ") {" + this.label.text + "};";
+    }
+
+    return labelCode;
+
+  }
 
   tikzifyNode() {
     let c = "c" + COLORS.indexOf(this.color);
 
-    // https://tex.stackexchange.com/questions/58878/tikz-set-node-label-position-more-precisely
-    // shift={(1,0.3}} COMMENT 2
-    // label={[shift={(1.0,0.5)}]Label}
 
     if (this.color == DEFAULT_COLOR) {
       c = "white";
     }
-    return "\\node[scale = " + this.size / 2 + ", nodes={" + c + "}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};"
+
+
+    return "\\node[scale = " + this.size / 2 + ", nodes={" + c + "}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};";
   }
 
 
   codifyNode() {
-    return "[" + round(this.x * 100) / 100 + "," + round(this.y * 100) / 100 + "," + this.size + "," + COLORS.indexOf(this.color) + "]";
+    return "[" + round(this.x * 100) / 100 + "," + round(this.y * 100) / 100 + "," + this.size + "," + COLORS.indexOf(this.color) + "," + this.label.rho + "," + this.label.angle + ",\"" + this.label.text + "\"]";
   }
 
 }

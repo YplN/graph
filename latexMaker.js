@@ -47,6 +47,7 @@ function createNodes() {
   let coordinates = "\t\t%drawing the vertices\n\t\t % HOW TO USE IT: \\node[scale = SCALE_VALUE, nodes={COLOR_OF_THE_NODE}{TEXT_LABEL}{POSITION_LABEL}{SIZE_NODE}] at  (COORDINATE)  {};\n\t\t%e.g. : \\node[scale = 0.5, nodes={red}{$v$}{above left}{}] at  (0,0)  {};\n";
   for (let v of Vertices) {
     coordinates += ("\t\t" + v.tikzifyNode() + "\n");
+    coordinates += ("\t\t" + v.tikzifyLabel() + "\n\n");
   }
   return coordinates;
 }

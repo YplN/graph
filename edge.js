@@ -18,13 +18,13 @@ class Edge {
     this.oX = (v2.x + v1.x) / 2;
     this.oY = (v2.y + v1.y) / 2;
 
-    this.label = new Label(nf(random(50), 2, 0), this.getmiddlePointX(), this.getmiddlePointY());
+    this.label = new Label(nf(random(50), 2, 0), this.getMidPointX(), this.getMidPointY());
     // this.v1arc
 
   }
 
   updateLabelPosition() {
-    this.label.move(this.getmiddlePointX(), this.getmiddlePointY());
+    this.label.move(this.getMidPointX(), this.getMidPointY());
   }
 
   kill() {
@@ -109,7 +109,7 @@ class Edge {
     }
 
     fill(FOCUSED_VERTEX_COLOR);
-    if (isDraggingMiddlePoint && this == ledge) {
+    if (isDraggingBendingPoint && this == ledge) {
       strokeWeight(1);
       stroke(200, 100);
 
@@ -120,29 +120,40 @@ class Edge {
     }
 
     if (showBendings) {
-      circle(this.oX, this.oY, 9);
+      this.showBendingPoint();
 
     }
 
     this.label.show();
   }
 
-  translateMiddlePoint(x, y) {
+  showBendingPoint() {
+    circle(this.oX, this.oY, 9);
+  }
+
+  showMidPoint() {
+    circle(this.getMidPointX(), this.getMidPointY(), 9);
+  }
+
+  translateBendingPoint(x, y) {
     this.oX += x;
     this.oY += y;
 
     this.updateLabelPosition();
   }
 
+  isOnMidPoint(x, y) {
+    return (dist(x, y, this.getMidPointX(), this.getMidPointY()) < VERTEX_SNAP_SIZE);
+  }
 
-  getmiddlePointX() {
+  getMidPointX() {
     return bezierPoint(this.v1.x, this.oX, this.oX, this.v2.x, 0.5);
   }
-  getmiddlePointY() {
+  getMidPointY() {
     return bezierPoint(this.v1.y, this.oY, this.oY, this.v2.y, 0.5);
   }
 
-  transformMiddlePoint(vC, xS, yS, xE, yE) {
+  transformBendingPoint(vC, xS, yS, xE, yE) {
     let vS = {
       x: xS,
       y: yS
@@ -158,33 +169,33 @@ class Edge {
     let newCoordinates = applyTransformation(theta, rho, vC, this.initialDraggingX, this.initialDraggingY);
 
 
-    this.moveMiddlePoint(newCoordinates[0], newCoordinates[1]);
+    this.moveBendingPoint(newCoordinates[0], newCoordinates[1]);
 
   }
 
-  resetMiddlePoint() {
+  resetBendingPoint() {
     this.oX = (this.v2.x + this.v1.x) / 2;
     this.oY = (this.v2.y + this.v1.y) / 2;
   }
 
-  setMiddlePoint(x, y) {
+  setBendingPoint(x, y) {
     this.oX = x;
     this.oY = y;
 
   }
 
 
-  moveMiddlePoint(x, y) {
-    this.setMiddlePoint(x, y);
+  moveBendingPoint(x, y) {
+    this.setBendingPoint(x, y);
     this.updateLabelPosition();
   }
 
 
-  isOnMiddlePoint(x, y) {
+  isOnBendingPoint(x, y) {
     return (dist(x, y, this.oX, this.oY) < VERTEX_SNAP_SIZE);
   }
 
-  // updateMiddlePoint(x, y) {
+  // updateBendingPoint(x, y) {
   //   this.oX = x;
   //   this.oY = y;
   //
@@ -204,6 +215,8 @@ class Edge {
     return "{v1 :" + this.v1 + ", v2 :" + this.v2 + " }";
   }
 
+
+
   distFrom(x, y) {
     const x1 = this.v1.x;
     const y1 = this.v1.y;
@@ -222,9 +235,12 @@ class Edge {
 
   tikzifyEdge() {
     // TODO: ORIENTED CASE
+    let labelCode = "";
+    if (showLabels)
+      labelCode = "node[midway, shift={(" + this.label.getExactLabelOffsetX() / 100 + "," + -this.label.getExactLabelOffsetY() / 100 + ")}, scale = 0.65] {" + this.label.text + "}";
+
     return "\\draw[line width = " + this.size + ", color = c" + COLORS.indexOf(this.color) +
-      "] " + "(v" + Vertices.indexOf(this.v1) + ") .. controls (" + this.oX / 100 + "," + this.oY / 100 + ") .. (v" + Vertices.indexOf(this.v2) + ");";
-    // return "\\draw[line width = " + this.size + "] " + "(v" + Vertices.indexOf(this.v1) + ") -- (v" + Vertices.indexOf(this.v2) + ");";
+      "] " + "(v" + Vertices.indexOf(this.v1) + ") .. controls (" + round(this.oX * 10) / 1000 + "," + round(this.oY * 10) / 1000 + ") .. (v" + Vertices.indexOf(this.v2) + ")" + labelCode + ";";
   }
 
 
@@ -232,7 +248,7 @@ class Edge {
     let o = 0;
     if (this.oriented)
       o = 1;
-    return "[" + Vertices.indexOf(this.v1) + "," + Vertices.indexOf(this.v2) + "," + this.size + "," + o + "," + COLORS.indexOf(this.color) + "," + this.oX + "," + this.oY + "]";
+    return "[" + Vertices.indexOf(this.v1) + "," + Vertices.indexOf(this.v2) + "," + this.size + "," + o + "," + COLORS.indexOf(this.color) + "," + this.oX + "," + this.oY + "," + this.label.rho + "," + this.label.angle + ",\"" + this.label.text + "\"]";
   }
 
 }

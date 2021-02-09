@@ -143,10 +143,10 @@ function mousePressed() {
               }
             } else // the user didn't click on a vertex
             {
-              let e = EdgeMiddlePointPicked(mouseX, mouseY);
+              let e = EdgeBendingPointPicked(mouseX, mouseY);
 
               if (e) {
-                isDraggingMiddlePoint = true;
+                isDraggingBendingPoint = true;
                 ledge = e;
               } else {
                 if (mouseButton == LEFT) {
@@ -195,11 +195,11 @@ function mouseDragged() {
           let i2 = selectedVertices.includes(v2);
 
           if (i1 > 0 && i2 > 0) {
-            e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+            e.translateBendingPoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
           } else if (i1 > 0) {
-            e.transformMiddlePoint(v2, v1.x, v1.y, v1.initialDraggingX, v1.initialDraggingY);
+            e.transformBendingPoint(v2, v1.x, v1.y, v1.initialDraggingX, v1.initialDraggingY);
           } else {
-            e.transformMiddlePoint(v1, v2.x, v2.y, v2.initialDraggingX, v2.initialDraggingY);
+            e.transformBendingPoint(v1, v2.x, v2.y, v2.initialDraggingX, v2.initialDraggingY);
 
           }
           edgesDone.push(e);
@@ -209,18 +209,18 @@ function mouseDragged() {
 
 
     for (let e of selectedEdges) {
-      //e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+      //e.translateBendingPoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
       // let v1 = e.v1;
       // let v2 = e.v2;
       //
       // if (selectedVertices.includes(v1) && selectedVertices.includes(v2)) {
-      //   e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+      //   e.translateBendingPoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
       // } else if (selectedVertices.includes(v1)) {
       //   console.log("2");
-      //   e.transformMiddlePoint(v2, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+      //   e.transformBendingPoint(v2, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
       // } else {
       //   console.log("1");
-      //   e.transformMiddlePoint(v1, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
+      //   e.transformBendingPoint(v1, mouseX, mouseY, mouseStartDraggingX, mouseStartDraggingY)
       // }
 
     }
@@ -274,14 +274,14 @@ function mouseDragged() {
     }
 
     for (let e of Edges) {
-      e.translateMiddlePoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+      e.translateBendingPoint(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
 
     }
 
     mouseStartDraggingX = mouseX;
     mouseStartDraggingY = mouseY;
-  } else if (isDraggingMiddlePoint) {
-    ledge.moveMiddlePoint(mouseX, mouseY);
+  } else if (isDraggingBendingPoint) {
+    ledge.moveBendingPoint(mouseX, mouseY);
   }
 
 }
@@ -347,7 +347,7 @@ function mouseReleased() {
   snapAnimation = 0;
   snapAnimationAlpha = 0;
   isTranslating = false;
-  isDraggingMiddlePoint = false;
+  isDraggingBendingPoint = false;
   ledge = false;
 
   // noLoop();
@@ -444,21 +444,38 @@ function mouseWheel(event) {
 
   if (!isLatexCodeShowing && !isGraphCodeShowing) {
 
+    let e = EdgeMidPointPicked(mouseX, mouseY);
+    let v = VertexPicked(mouseX, mouseY);
     if (event.delta > 0) {
 
-      if (keyIsDown(16)) {
-        rotateVertices(selectedVertices, PI / 8);
-        // rotateMiddlePoint(selectedEdges, selectedVertices, PI / 8);
+      if (e) {
+        e.label.rotate(PI / 8);
+      } else if (v) {
+        v.label.rotate(PI / 8);
       } else {
-        zoomFrom(mouseX, mouseY, 1 / 1.1);
+        if (keyIsDown(16)) {
+          rotateVertices(selectedVertices, PI / 8);
+          // rotateBendingPoint(selectedEdges, selectedVertices, PI / 8);
+        } else {
+          zoomFrom(mouseX, mouseY, 1 / 1.1);
+        }
       }
+
     } else {
-      if (keyIsDown(16)) {
-        rotateVertices(selectedVertices, -PI / 8);
-        // rotateMiddlePoint(selectedEdges, selectedVertices, -PI / 8);
+      if (e) {
+
+        e.label.rotate(-PI / 8);
+      } else if (v) {
+        v.label.rotate(-PI / 8);
       } else {
-        zoomFrom(mouseX, mouseY, 1.1);
+        if (keyIsDown(16)) {
+          rotateVertices(selectedVertices, -PI / 8);
+          // rotateBendingPoint(selectedEdges, selectedVertices, -PI / 8);
+        } else {
+          zoomFrom(mouseX, mouseY, 1.1);
+        }
       }
+
     }
   }
 }

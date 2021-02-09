@@ -27,7 +27,7 @@
 
 ### New !
 
-Bending arcs ! Press 'b' to toggle bending modes. It creates a new point for each edge that allows you to bend them.
+Bending edges ! Press 'b' to toggle bending modes. It creates a new point for each edge that allows you to bend them.
 
 ### TODO
 
@@ -37,7 +37,6 @@ Bending arcs ! Press 'b' to toggle bending modes. It creates a new point for eac
 -   improve bending edge selection
 -   Labels : move, size
 -   copy/paste subgraph (do some additional tests...) + bending edges
--   share/load : dealing with bending arcs
 
 #### To add :
 
