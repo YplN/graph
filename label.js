@@ -12,12 +12,13 @@ class Label {
     this.height = bbox.h;
     this.angle = 0;
     this.rho = 30;
+    this.printed = showLabels;
   }
 
 
   show() {
 
-    if (showLabels) {
+    if (showLabels && this.printed) {
       textAlign(CENTER, CENTER);
       textSize(this.size);
       noStroke();
@@ -96,6 +97,10 @@ class Label {
 
   rotate(r) {
     this.angle += r;
+  }
+
+  toggle() {
+    this.printed = !this.printed;
   }
 
 }

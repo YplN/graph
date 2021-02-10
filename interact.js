@@ -36,7 +36,7 @@ function mousePressed() {
       isGraphCodeShowing = false;
     }
   } else {
-    if (!isLatexCodeShowing && !isGraphCodeShowing) {
+    if (!isLatexCodeShowing && !isGraphCodeShowing && !isEditingLabel) {
       // check if user toggled the mode
       if (modeSlider.isOn(mouseX, mouseY)) {
         modeSlider.updatingSliderWithMouse();
@@ -60,114 +60,111 @@ function mousePressed() {
           mouseStartDraggingY = mouseY;
         } else {
           {
+            let l = LabelPicked(mouseX, mouseY);
 
-            // check if user clicked on a vertex
-            let v = VertexPicked(mouseX, mouseY);
+            if (l && !isEditingLabel) {
+              createLabelArea(mouseX, mouseY, l);
+              isEditingLabel = true;
+              labelEdited = l;
+            } else {
 
-            if (v) {
 
-              if (isCreatingCopy) {
-                if (grid.isMagnetic) {
-                  for (let v of selectedVertices) {
-                    v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
-                    v.move(grid.closestLine(v.x), grid.closestLine(v.y));
+              // check if user clicked on a vertex
+              let v = VertexPicked(mouseX, mouseY);
+
+              if (v) {
+
+                if (isCreatingCopy) {
+                  if (grid.isMagnetic) {
+                    for (let v of selectedVertices) {
+                      v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+                      v.move(grid.closestLine(v.x), grid.closestLine(v.y));
+                    }
+                  } else {
+                    for (let v of selectedVertices) {
+                      v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
+                    }
                   }
+                  isCreatingCopy = false;
+                  followingMouseVertex = null;
+                  selectedEdges = selectedEdgesFromSelectedVertices();
                 } else {
-                  for (let v of selectedVertices) {
-                    v.translate(mouseX - mouseStartDraggingX, mouseY - mouseStartDraggingY);
-                  }
-                }
-                isCreatingCopy = false;
-                followingMouseVertex = null;
-                selectedEdges = selectedEdgesFromSelectedVertices();
-              } else {
 
-                lvertex = v;
-                lmouseX = v.x;
-                lmouseY = v.y;
-                if (mouseButton == RIGHT) {
-                  if (keyIsPressed) {
-                    if (keyCode == CONTROL) {
-                      let index = selectedVertices.indexOf(v);
-                      if (index < 0) {
-                        selectedVertices.push(v);
-                      } else {
-                        selectedVertices.splice(index, 1);
+                  lvertex = v;
+                  lmouseX = v.x;
+                  lmouseY = v.y;
+                  if (mouseButton == RIGHT) {
+                    if (keyIsPressed) {
+                      if (keyCode == CONTROL) {
+                        let index = selectedVertices.indexOf(v);
+                        if (index < 0) {
+                          selectedVertices.push(v);
+                        } else {
+                          selectedVertices.splice(index, 1);
+                        }
+                      }
+                    } else {
+                      isDraggingVertex = true;
+                      mouseStartDraggingX = mouseX;
+                      mouseStartDraggingY = mouseY;
+                      mouseStartDraggingFromBeginingX = mouseX;
+                      mouseStartDraggingFromBeginingY = mouseY;
+                      if (!selectedVertices.includes(v)) {
+                        selectedVertices = [v];
+                        selectedEdges = [];
+                        // } else if (!selectedVertices.includes(v)) {
+                        //   selectedVertices = [v];
+                        // }
+                      }
+
+
+                      for (let v of selectedVertices) {
+                        v.initialDraggingX = v.x;
+                        v.initialDraggingY = v.y;
+                      }
+
+                      for (let e of Edges) {
+                        e.initialDraggingX = e.oX;
+                        e.initialDraggingY = e.oY;
                       }
                     }
+
                   } else {
-                    isDraggingVertex = true;
-                    mouseStartDraggingX = mouseX;
-                    mouseStartDraggingY = mouseY;
-                    mouseStartDraggingFromBeginingX = mouseX;
-                    mouseStartDraggingFromBeginingY = mouseY;
-                    if (!selectedVertices.includes(v)) {
-                      selectedVertices = [v];
-                      selectedEdges = [];
-                      // } else if (!selectedVertices.includes(v)) {
-                      //   selectedVertices = [v];
-                      // }
-                    }
-
-
-                    for (let v of selectedVertices) {
-                      v.initialDraggingX = v.x;
-                      v.initialDraggingY = v.y;
-                    }
-
-                    for (let e of Edges) {
-                      e.initialDraggingX = e.oX;
-                      e.initialDraggingY = e.oY;
+                    if (mouseButton == LEFT) {
+                      // Create a new edge if there is a drag
+                      isCreatingEdge = true;
                     }
                   }
 
-                  //  else {
-                  //   if (!selectedVertices.includes(v) || selectedVertices.length > 1) {
-                  //     selectedVertices = [v];
-                  //   } else {
-                  //     selectedVertices = [];
-                  //   }
-                  // }
-                } else {
-                  // if (selectedVertices.indexOf(v) < 0) {
-                  //   selectedVertices = [v];
-                  // } else {
-                  //   selectedVertices = [];
-                  // }
-                  if (mouseButton == LEFT) {
-                    // Create a new edge if there is a drag
-                    isCreatingEdge = true;
-                  }
                 }
+              } else // the user didn't click on a vertex
+              {
+                let e = EdgeBendingPointPicked(mouseX, mouseY);
 
-              }
-            } else // the user didn't click on a vertex
-            {
-              let e = EdgeBendingPointPicked(mouseX, mouseY);
-
-              if (e) {
-                isDraggingBendingPoint = true;
-                ledge = e;
-              } else {
-                if (mouseButton == LEFT) {
-                  if (grid.isMagnetic) {
-                    addNewVertex(grid.closestLine(mouseX), grid.closestLine(mouseY));
-                    lmouseX = grid.closestLine(mouseX);
-                    lmouseY = grid.closestLine(mouseY);
-                  } else {
-                    addNewVertex(mouseX, mouseY);
-                    lmouseX = mouseX;
-                    lmouseY = mouseY;
-                  }
-                  isCreatingEdge = true;
-
-
+                if (e) {
+                  isDraggingBendingPoint = true;
+                  ledge = e;
                 } else {
-                  selectedVertices = [];
-                  selectedEdges = [];
-                  isSelectioning = true;
-                  startSelectionX = mouseX;
-                  startSelectionY = mouseY;
+                  if (mouseButton == LEFT) {
+                    if (grid.isMagnetic) {
+                      addNewVertex(grid.closestLine(mouseX), grid.closestLine(mouseY));
+                      lmouseX = grid.closestLine(mouseX);
+                      lmouseY = grid.closestLine(mouseY);
+                    } else {
+                      addNewVertex(mouseX, mouseY);
+                      lmouseX = mouseX;
+                      lmouseY = mouseY;
+                    }
+                    isCreatingEdge = true;
+
+
+                  } else {
+                    selectedVertices = [];
+                    selectedEdges = [];
+                    isSelectioning = true;
+                    startSelectionX = mouseX;
+                    startSelectionY = mouseY;
+                  }
                 }
               }
             }
@@ -176,6 +173,11 @@ function mousePressed() {
       }
     }
   }
+
+  if (isEditingLabel && !labelEdited.isOn(mouseX, mouseY)) {
+    closeLabelAreaAndUpdate(true);
+  }
+
 }
 
 
@@ -358,6 +360,7 @@ function mouseReleased() {
 function keyPressed() {
   // loop();
 
+
   if (!isLatexCodeShowing && !isGraphCodeShowing) {
     if (keyCode == DELETE || keyCode == BACKSPACE) {
       for (let e of selectedEdges) {
@@ -370,52 +373,63 @@ function keyPressed() {
       selectedVertices = [];
     }
     if (keyCode == ESCAPE) {
-      selectedEdges = [];
-      selectedVertices = [];
-    }
-
-    if (key == ' ') {
-      modeSlider.next();
-      updateSelectMode();
-    }
-    if (key == 'm' || key == 'M') {
-      if (!lateralBar) {
-        animatingLateralBar = true;
-        lateralBarOffsetX = 1;
+      if (isEditingLabel) {
+        closeLabelAreaAndUpdate(false);
       } else {
-        lateralBar = false;
-        animatingLateralBar = false;
-        lateralBarOffsetX = 1;
+        selectedEdges = [];
+        selectedVertices = [];
       }
     }
 
-    if (key == 'o' || key == 'O') {
-      oriented = !oriented;
-    }
+    if (!isEditingLabel) {
 
-    if (key == 'b' || key == 'B') {
-      showBendings = !showBendings;
-    }
-
-    if (key == 'c' || key == 'C') {
-      if (keyIsDown(17) && !isLatexCodeShowing && !isGraphCodeShowing) {
-        copySelection();
-      } else {
-        centerVertices();
+      if (key == ' ') {
+        modeSlider.next();
+        updateSelectMode();
+      }
+      if (key == 'm' || key == 'M') {
+        if (!lateralBar) {
+          animatingLateralBar = true;
+          lateralBarOffsetX = 1;
+        } else {
+          lateralBar = false;
+          animatingLateralBar = false;
+          lateralBarOffsetX = 1;
+        }
       }
 
+      if (key == 'o' || key == 'O') {
+        oriented = !oriented;
+      }
+
+      if (key == 'b' || key == 'B') {
+        showBendings = !showBendings;
+      }
+
+      if (key == 'c' || key == 'C') {
+        if (keyIsDown(17) && !isLatexCodeShowing && !isGraphCodeShowing) {
+          copySelection();
+        } else {
+          centerVertices();
+        }
+
+      }
+
+      if (key == 'g' || key == 'G') {
+        grid.isMagnetic = !grid.isMagnetic;
+      }
+      if (key == 'l' || key == 'L') {
+        showLabels = !showLabels;
+      }
+
+      if (key == 's' || key == 'S') {
+        if (keyIsDown(18)) // Alt
+          shuffleGraph();
+      }
     }
 
-    if (key == 'g' || key == 'G') {
-      grid.isMagnetic = !grid.isMagnetic;
-    }
-    if (key == 'l' || key == 'L') {
-      showLabels = !showLabels;
-    }
-
-    if (key == 's' || key == 'S') {
-      if (keyIsDown(18)) // Alt
-        shuffleGraph();
+    if (keyCode == ENTER && isEditingLabel) {
+      closeLabelAreaAndUpdate(true);
     }
 
   } else {

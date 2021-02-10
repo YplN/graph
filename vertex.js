@@ -7,7 +7,7 @@ class Vertex {
     this.color = BACKGROUND_COLOR;
 
     // if (s) {
-    this.label = new Label(nf(random(1, 10), 1, 0), x, y);
+    this.label = new Label(String(Vertices.length), x, y);
     // }
   }
 

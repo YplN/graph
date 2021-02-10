@@ -1,11 +1,4 @@
 class Edge {
-  // constructor(v1, v2) {
-  //   this.v1 = v1;
-  //   this.v2 = v2;
-  //   this.toKill = false;
-  //   this.color = DEFAULT_COLOR;
-  //   this.oriented = true;
-  // }
 
   constructor(v1, v2, o) {
     this.v1 = v1;
@@ -18,7 +11,7 @@ class Edge {
     this.oX = (v2.x + v1.x) / 2;
     this.oY = (v2.y + v1.y) / 2;
 
-    this.label = new Label(nf(random(50), 2, 0), this.getMidPointX(), this.getMidPointY());
+    this.label = new Label(String(Edges.length), this.getMidPointX(), this.getMidPointY());
     // this.v1arc
 
   }

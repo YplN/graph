@@ -89,8 +89,16 @@ let grid;
 
 let oneFrameMoreToDo = true;
 
-let showLabels = false;
+let showLabels = true;
+let isEditingLabel = false;
+let labelEdited = null;
+let labelArea;
+
 let showBendings = false;
+
+let counter = 0;
+
+
 
 // function to disable default menu on right click
 // https://discourse.processing.org/t/using-right-mouse-without-context-menu/9379/3
@@ -559,6 +567,23 @@ function VertexPicked(x, y) {
 }
 
 
+function LabelPicked(x, y) {
+  for (let i = Vertices.length - 1; i >= 0; i--) {
+    if (Vertices[i].label.isOn(mouseX, mouseY)) {
+      return Vertices[i].label;
+    }
+  }
+
+  for (let i = Edges.length - 1; i >= 0; i--) {
+    if (Edges[i].label.isOn(mouseX, mouseY)) {
+      return Edges[i].label;
+    }
+  }
+
+
+  return;
+}
+
 function EdgeBendingPointPicked(x, y) {
   for (let i = Edges.length - 1; i >= 0; i--) {
     if (Edges[i].isOnBendingPoint(mouseX, mouseY)) {
@@ -976,6 +1001,43 @@ function createLateX() {
   return latex;
 }
 
+
+function createLabelArea(x, y, l) {
+  l.toggle();
+  let w = 30;
+  let h = 20;
+  labelArea = createElement('textarea', l.text);
+  labelArea.id('labelArea')
+  labelArea.position(mouseX - w / 2, mouseY - h / 2);
+  labelArea.size(w, h);
+  var textAreaLabel = document.getElementById('labelArea');
+  textAreaLabel.style.resize = "unset";
+  textAreaLabel.style.color = "antiquewhite";
+  textAreaLabel.style.background = "#191919";
+  textAreaLabel.style.textAlign = "center";
+  textAreaLabel.focus();
+}
+
+
+function setNewLabelFromTextArea(b) {
+  if (b) {
+    labelEdited.text = labelArea.value();
+  }
+  labelEdited.printed = true;
+  labelEdited = null;
+}
+
+function hideLabelArea() {
+  labelArea.remove();
+}
+
+
+function closeLabelAreaAndUpdate(b) {
+  setNewLabelFromTextArea(b);
+  hideLabelArea();
+  isEditingLabel = false;
+
+}
 
 function showLateXCode() {
 
