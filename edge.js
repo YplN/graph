@@ -11,7 +11,7 @@ class Edge {
     this.oX = (v2.x + v1.x) / 2;
     this.oY = (v2.y + v1.y) / 2;
 
-    this.label = new Label(String(Edges.length), this.getMidPointX(), this.getMidPointY());
+    this.label = new Label("e" + Edges.length, this.getMidPointX(), this.getMidPointY());
     // this.v1arc
 
   }
