@@ -362,7 +362,7 @@ function keyPressed() {
 
 
   if (!isLatexCodeShowing && !isGraphCodeShowing) {
-    if (keyCode == DELETE || keyCode == BACKSPACE) {
+    if ((keyCode == DELETE || keyCode == BACKSPACE) && !isEditingLabel) {
       for (let e of selectedEdges) {
         e.kill();
       }
