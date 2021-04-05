@@ -150,12 +150,7 @@ function setup() {
   COLOR_WIDTH = 0.6 * LATERAL_BAR_SIZE / 3;
   COLOR_HEIGHT = 30;
 
-  //sizeSlider = new Slider(width + LATERAL_BAR_SIZE / 2, 0.6 * height, SLIDER_BAR_SIZE, 0.5, 3, true);
-  sizeSlider = new Slider(width + LATERAL_BAR_SIZE * 0.1 - lateralBarOffsetX, 0.6 * height, SLIDER_BAR_SIZE, 0.5, 2, 1, true, BACKGROUND_COLOR, DEFAULT_COLOR, false);
-  modeSlider = new Slider(0.02 * width, 0.9525 * height, 80, 0, 2, 1, true, DEFAULT_COLOR, BACKGROUND_COLOR, false);
-
-  shareButton = new Button(10, 10, "Share or Load", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
-  latexButton = new Button(20 + shareButton.width, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+  initiateUI();
 
   grid = new Grid(50, DEFAULT_COLOR, false);
 
@@ -169,6 +164,24 @@ function setup() {
   //createGraph("?V=[[378.11,569.03,1,10],[1080.88,220.31,1,10],[761,694.34,1,10]]&E=[[0,1,1,0,11,609.7113161319014,213.65524999999982],[1,2,1,0,11,920.9449999999999,457.3297500000002],[2,0,1,0,11,569.56,631.6897500000002]]");
 
   //createGraph('?V=[[600,619,1,10],[924,222,1,10],[1200,604,1,10]]&E=[[0,1,1,0,11,687,376,30,0.7853981633974483,"19."],[1,2,1,0,11,978,457,30,-0.39269908169872414,"47."],[2,0,1,0,11,917,719,30,-1.5707963267948966,"32."]]');
+}
+
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight - 4);
+  initiateUI();
+}
+
+
+
+function initiateUI() { //sizeSlider = new Slider(width + LATERAL_BAR_SIZE / 2, 0.6 * height, SLIDER_BAR_SIZE, 0.5, 3, true);
+  sizeSlider = new Slider(width + LATERAL_BAR_SIZE * 0.1 - lateralBarOffsetX, 0.6 * height, SLIDER_BAR_SIZE, 0.5, 2, 1, true, BACKGROUND_COLOR, DEFAULT_COLOR, false);
+  modeSlider = new Slider(20, height - 20, 80, 0, 2, 1, true, DEFAULT_COLOR, BACKGROUND_COLOR, false);
+
+  shareButton = new Button(10, 10, "Share or Load", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+  latexButton = new Button(20 + shareButton.width, 10, "Generate LaTeX", menuFont, 18, DEFAULT_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, DEFAULT_COLOR, color(255), color(147, 59, 59), DEFAULT_COLOR, BACKGROUND_COLOR);
+
+
 }
 
 
@@ -267,7 +280,7 @@ function showModeSelector() {
   } else {
     textString = "Vertices";
   }
-  text(textString, modeSlider.x + modeSlider.length + 20, 0.95 * height);
+  text(textString, modeSlider.x + modeSlider.length + 20, modeSlider.y - 4);
 
 
 }
