@@ -192,7 +192,29 @@ class Vertex {
 
   snap() {
     if (grid.isMagnetic) {
+      // let x0 = this.x;
+      // let y0 = this.y;
       this.move(grid.closestLine(this.x), grid.closestLine(this.y));
+      // let x1 = this.x;
+      // let y1 = this.y;
+      //
+      //
+      // for (let e of Edges) {
+      //   if (this.isAnExtremity(e) == 1) {
+      //     //e.translateBendingPoint(x1 - x0, y1 - y0);
+      //     e.transformBendingPoint(e.v2, x1, y1, x0, y0);
+      //
+      //   }
+      // }
+
+
+      // for (let e of Edges) {
+      //   if (this.isAnExtremity(e) == 1) {
+      //     //e.translateBendingPoint(x1 - x0, y1 - y0);
+      //     e.transformBendingPoint(e.v2, x1, y1, x0, y0);
+      //
+      //   }
+      // }
     }
   }
   tikzifyCoordinate() {
@@ -205,7 +227,7 @@ class Vertex {
 
       // https://tex.stackexchange.com/questions/58878/tikz-set-node-label-position-more-precisely
       // shift={(1,0.3)} COMMENT 2
-      labelCode = "\\node[shift={(" + round(this.label.getExactLabelOffsetX() * 10) / 1000 + "," + -round(this.label.getExactLabelOffsetY() * 10) / 1000 + ")}, scale=0.65] at  (v" + Vertices.indexOf(this) + ") {" + this.label.text + "};";
+      labelCode = "\\node[shift={(" + round(this.label.getExactLabelOffsetX() * 10) / 1000 + "," + -round(this.label.getExactLabelOffsetY() * 10) / 1000 + ")}, scale=\\scaleV] at  (v" + Vertices.indexOf(this) + ") {" + this.label.text + "};";
     }
 
     return labelCode;
@@ -221,12 +243,12 @@ class Vertex {
     }
 
 
-    return "\\node[scale = " + this.size / 2 + ", nodes={" + c + "}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};";
+    return "\\node[scale = \\scaleN*" + this.size / 2 + ", nodes={" + c + "}{}{}{}] at  (v" + Vertices.indexOf(this) + ")  {};";
   }
 
 
   codifyNode() {
-    return "[" + round(this.x * 100) / 100 + "," + round(this.y * 100) / 100 + "," + this.size + "," + COLORS.indexOf(this.color) + "," + this.label.rho + "," + this.label.angle + ",\"" + this.label.text + "\"]";
+    return "[" + round(this.x * 100) / 100 + "," + round(this.y * 100) / 100 + "," + this.size + "," + COLORS.indexOf(this.color) + "," + this.label.rho + "," + this.label.angle + ",\"" + codifyLabel(this.label.text) + "\"]";
   }
 
 }

@@ -8,6 +8,8 @@ class Edge {
     this.oriented = o;
     this.size = 1;
 
+    this.bended = false;
+
     this.oX = (v2.x + v1.x) / 2;
     this.oY = (v2.y + v1.y) / 2;
 
@@ -147,6 +149,7 @@ class Edge {
   }
 
   transformBendingPoint(vC, xS, yS, xE, yE) {
+
     let vS = {
       x: xS,
       y: yS
@@ -164,11 +167,13 @@ class Edge {
 
     this.moveBendingPoint(newCoordinates[0], newCoordinates[1]);
 
+
   }
 
   resetBendingPoint() {
     this.oX = (this.v2.x + this.v1.x) / 2;
     this.oY = (this.v2.y + this.v1.y) / 2;
+    this.label.move(this.oX, this.oY);
   }
 
   setBendingPoint(x, y) {
@@ -230,7 +235,7 @@ class Edge {
     // TODO: ORIENTED CASE
     let labelCode = "";
     if (showLabels)
-      labelCode = "node[midway, shift={(" + this.label.getExactLabelOffsetX() / 100 + "," + -this.label.getExactLabelOffsetY() / 100 + ")}, scale = 0.65] {" + this.label.text + "}";
+      labelCode = "node[midway, shift={(" + this.label.getExactLabelOffsetX() / 100 + "," + -this.label.getExactLabelOffsetY() / 100 + ")}, scale = \\scaleE] {" + this.label.text + "}";
 
     return "\\draw[line width = " + this.size + ", color = c" + COLORS.indexOf(this.color) +
       "] " + "(v" + Vertices.indexOf(this.v1) + ") .. controls (" + round(this.oX * 10) / 1000 + "," + round(this.oY * 10) / 1000 + ") .. (v" + Vertices.indexOf(this.v2) + ")" + labelCode + ";";
@@ -241,7 +246,7 @@ class Edge {
     let o = 0;
     if (this.oriented)
       o = 1;
-    return "[" + Vertices.indexOf(this.v1) + "," + Vertices.indexOf(this.v2) + "," + this.size + "," + o + "," + COLORS.indexOf(this.color) + "," + this.oX + "," + this.oY + "," + this.label.rho + "," + this.label.angle + ",\"" + this.label.text + "\"]";
+    return "[" + Vertices.indexOf(this.v1) + "," + Vertices.indexOf(this.v2) + "," + this.size + "," + o + "," + COLORS.indexOf(this.color) + "," + this.oX + "," + this.oY + "," + this.label.rho + "," + this.label.angle + ",\"" + codifyLabel(this.label.text) + "\"]";
   }
 
 }

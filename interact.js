@@ -323,7 +323,8 @@ function mouseReleased() {
         selectedVertices = [v];
       } else {
         if (grid.isMagnetic) {
-          lvertex.move(grid.closestLine(mouseX), grid.closestLine(mouseY));
+          //lvertex.move(grid.closestLine(mouseX), grid.closestLine(mouseY));
+          lvertex.snap();
         }
       }
     } else {

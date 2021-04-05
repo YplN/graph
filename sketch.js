@@ -178,7 +178,6 @@ function draw() {
   // console.log(frameCount);
   UpdateEgdes();
 
-
   grid.show();
   showGraph();
   // if (Edges.length > 0) {
@@ -991,9 +990,11 @@ function copySelection() {
 
 
 function createLateX() {
-  let latex = header();
+  let latex = preHeader() + "\n\n";
+  latex += header();
   latex += defineColors();
   latex += "\\begin{document}\n	\\begin{tikzpicture}[yscale=-1]\n";
+  latex += createDefines() + "\n";
   latex += createCoordinates() + "\n";
   latex += createEdges() + "\n";
   latex += createNodes() + "\n";
@@ -1208,6 +1209,10 @@ function makeNodeOutOfList(L) {
 
 }
 
+
+function codifyLabel(s) {
+  return s.replace('\\', '\\\\').replace("\"", "\\\"");
+}
 
 function makeEdgeOutOfList(L) {
   let indexV1 = L[0];
